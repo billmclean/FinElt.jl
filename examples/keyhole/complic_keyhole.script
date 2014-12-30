@@ -1,0 +1,14 @@
+Merge "complic_keyhole.msh";
+Merge "complic_keyhole.pos";
+
+General.Axes = 1;
+General.AxesLabelX = "X";
+General.AxesLabelY = "Y";
+General.AxesLabelZ = "Z";
+Mesh.SurfaceEdges = 1;
+View[0].Visible = 1;
+View[1].Visible = 0;
+Plugin(Warp).View = 0;
+Plugin(Warp).OtherView = 1;
+Plugin(Warp).Run;
+

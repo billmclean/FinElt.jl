@@ -7,3 +7,4 @@
 *.out
 *.backup
 *.synctex.gz
+*.msh.opt

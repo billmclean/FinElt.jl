@@ -1,5 +1,5 @@
-FinElt
-======
+FinElt.jl
+=========
 
 A simple package for a first course in finite element methods.
 

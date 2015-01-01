@@ -4,7 +4,8 @@ FinElt
 A simple package for a first course in finite element methods.
 
 These Julia routines rely on [Gmsh][1] for mesh generation and
-visualization.  Please see the Quick Start Guide (under doc/).
+visualization.  Please see the Quick Start Guide (under doc/) for
+examples illustrating the use of FinElt.
 
 [1]: http://geuz.org/gmsh/
 

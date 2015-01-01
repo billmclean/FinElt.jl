@@ -30,10 +30,9 @@ Plane Surface(1) = { 1 };
 Line Loop(2) = { 9, 10, 11, 12 };
 Plane Surface(2) = { 2 };
 
-Physical Surface("Major") = { 1 };
-Physical Surface("Minor") = { 2 };
-Physical Line("West") = { 1 };
-Physical Line("South") = { 2 };
-Physical Line("East") = { 3 };
-Physical Line("North") = { 4, 5 };
-Physical Line("Inner") = { 6, 7, 8 };
+Physical Surface("LightBlue") = { 1 };
+Physical Surface("LightGreen") = { 2 };
+Physical Line("Violet") = { 1, 3 };
+Physical Line("Black") = { 2 };
+Physical Line("DarkBlue") = { 4, 5 };
+Physical Line("Red") = { 6, 7, 8 };

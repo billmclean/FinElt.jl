@@ -19,6 +19,8 @@ and can simply do
 \begin{verbatim}
 # dnf install julia gmsh 
 \end{verbatim}
+At the time of writing, this command installs Julia~0.3.3 and
+Gmsh~2.8.5.
 
 Whatever platform you are using, once Julia is installed you can 
 easily set up FinElt:
@@ -34,7 +36,7 @@ the path is
 \begin{verbatim}
 ~/.julia/v0.3/FinElt/examples/keyhole
 \end{verbatim}
-Copy this directory to a convenient location.
+You should copy this directory to a convenient location.
 
 After working through these two examples, I recommend that you 
 download and study the 
@@ -60,10 +62,10 @@ H^1_0(\Omega)=\{\,v\in H^1(\Omega):\text{$u=0$ on~$\partial\Omega$}
 	\,\}.
 \]
 The first Green identity asserts that
-\[
+\begin{equation}\label{eq: first Green}
 \int_\Omega\nabla u\cdot\nabla v=\int_\Omega(-\nabla^2 u)v
 	+\int_{\partial\Omega}\frac{\partial u}{\partial n}\,v,
-\]
+\end{equation}
 where $\boldsymbol{n}$ denotes the outward unit normal to~$\Omega$,
 and consequently we say that $u\in H^1_0(\Omega)$ is a \emph{weak 
 solution} of the boundary-value problem~\eqref{eq:  simple bvp} if
@@ -91,7 +93,7 @@ solution} of the boundary-value problem~\eqref{eq:  simple bvp} if
 \caption{Reading the geometry description file into Gmsh}
 \label{fig: open file}
 \begin{center}
-\includegraphics[scale=0.4]{images/open_geo_file.png}
+\includegraphics[scale=0.3]{images/open_geo_file.png}
 \end{center}
 \end{figure}
 
@@ -107,11 +109,12 @@ solution} of the boundary-value problem~\eqref{eq:  simple bvp} if
 \caption{A triangulation of $\Omega$.}
 \label{fig: triangulation}
 \begin{center}
-\includegraphics[scale=0.4]{images/triangulation.png}
+\includegraphics[scale=0.3]{images/triangulation.png}
 \end{center}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\paragraph{Geometry description.}
 To compute a numerical approximation to this weak solution, we start 
 by triangulating $\Omega$.  Use a text editor to read the 
 geometry description file~\verb!keyhole.geo! and observe how the 
@@ -129,6 +132,7 @@ From the \verb!Tools! menu, open the \verb!Options! window, select
 window should now display the keyhole domain~$\Omega$ and show the 
 locations of the points defined in \verb!keyhole.geo!.
 
+\paragraph{Mesh generation.}
 To generate a triangulation, click on the \verb!+! next to 
 the \verb!Mesh! label in the left pane of the main Gmsh window and 
 then click on \verb!2D!.  The result should look something like 
@@ -136,6 +140,7 @@ Figure~\ref{fig: triangulation}.  From the \verb!File! menu, select
 the \verb!Save Mesh! option to create a text file 
 \verb!keyhole.msh!.
 
+\paragraph{Finite element solution.}
 Let $\Omega_h$ denote the triangulated domain, where, in the customary
 way, $h$ is the maximum diameter of the triangles.  Since $\Omega_h$ 
 is a polygon it can only approximate $\Omega$, whose boundary 
@@ -151,6 +156,7 @@ solution~$u_h\in\mathcal{S}_h$ is then defined by requiring that
 which is a finite-dimensional approximation to the variational 
 problem~\eqref{eq: weak bvp}.
 
+\paragraph{Julia script.}
 Use a text editor to read the file \verb!keyhole.jl!.  This 
 Julia script begins by reading the mesh data file \verb!keyhole.msh! 
 and creating a data structure called \verb!mesh! that stores (amongst 
@@ -176,6 +182,7 @@ nodal vector~\verb!u! is constructed by including the values at both
 the free and fixed nodes (the latter being all zeros).  As output, 
 the script writes a postprocessing file \verb!keyhole.pos!.
 
+\paragraph{Output and visualization.}
 Execute the script in the usual way:
 \begin{verbatim}
 julia> include("keyhole.jl")
@@ -238,8 +245,128 @@ like Figure~\ref{fig: warped surface}.  By left-clicking and dragging
 the display, you can rotate the surface to obtain a view like the one 
 in Figure~\ref{fig: 3D view}.
 
+\paragraph{Exercise.} 
+Solve the problem again using a finer mesh.  Hint: select \verb!Mesh! 
+in the left pane of the \verb!Options! window, choose the 
+\verb!General! tab and adjust the \verb!Min/Max element size!.  You 
+might also want to go to the \verb!Visibility! tab and
+uncheck the \verb!Surface edges! box 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section*{Second Example}
+Suppose now that $\Omega$ is the keyhole-shaped region with an 
+interior circular hole shown in Figure~\ref{fig: complicated bvp}.
+We want to find $u$ satisfying $-\nabla\cdot(a\nabla u)=f$ 
+in~$\Omega$, where the coefficient $a(x)$ and source term~$f(x)$ are 
+piecewise constant: $a=1$~and $f=1$ in the part of~$\Omega$ that is 
+shaded light blue, whereas $a=10$~and $f=4$ in the part shaded 
+light green. In addition, we impose Dirichlet boundary conditions on 
+the parts of~$\Gamma=\partial\Omega$ coloured dark blue or black, and 
+Neumann conditions on the part coloured violet or red.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}
+\caption{A more complicated boundary-value problem.}
+\label{fig: complicated bvp}
+\begin{center}
+\begin{tikzpicture}[scale=1.5]
+\path[fill=blue!10] (-1,0) -- (-1,-2) -- (1,-2) -- (1,0)
+arc [radius=sqrt(2), start angle=-45, end angle=225];
+\draw[blue,thick] (1,0)  
+arc [radius=sqrt(2), start angle=-45, end angle=225];
+\draw[red,thick,fill=white] (0,1) circle [radius=sqrt(2)/2];
+\draw[green!40,fill=green!40] (-0.5,-0.5) -- (-0.5,-1.5) -- 
+(0.5,-1.25) -- (0.5, -0.75) -- (-0.5,-0.5);
+\draw[black,thick] (-1,-2) -- (1,-2);
+\node[above,blue] at (0,2.4142) {$u=-|\boldsymbol{x}|/2$};
+\node[below] at (0,-2) {$u=0$};
+\draw[violet,ultra thick] (-1,0) -- (-1,-2);
+\node[left,violet] at (-1.0,-1.0) 
+{$\dfrac{\partial u}{\partial n}=-1$};
+\draw[violet,ultra thick] (1,0) -- (1,-2);
+\node[right,violet] at (1.0,-1.0) 
+{$\dfrac{\partial u}{\partial n}=-1$};
+\node[red] at (0,1) {$\dfrac{\partial u}{\partial n}=0$};
+\node at (-4,2) {$-\nabla\cdot(a\nabla u)=f$};
+\draw[blue!10,fill=blue!10] (-4.5,1) -- (-3.5,1) -- (-3.5,0) 
+-- (-4.5,0) -- (-4.5,1);
+\node at (-4,0.75) {$a=1$};
+\node at (-4,0.25) {$f=1$};
+\draw[green!40,fill=green!40] (-4.5,-1) -- (-3.5,-1) -- (-3.5,-2) 
+-- (-4.5,-2) -- (-4.5,-1);
+\node at (-4,-1.25) {$a=10$};
+\node at (-4,-1.75) {$f=4$};
+\end{tikzpicture}
+\end{center}
+\end{figure}
+
+\begin{figure}
+\caption{The computed solution for the second example.}
+\label{fig: second soln}
+\begin{center}
+\includegraphics[scale=0.4]{images/complic_keyhole.png}
+\end{center}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\paragraph{Weak formulation.}
+Define the trial set~$\mathcal{S}$ and test space~$\mathcal{T}$ by
+\begin{align*}
+\mathcal{S}&=\{\,v\in H^1(\Omega):
+\text{$v=-|x|/2$ for $x\in\text{DarkBlue}$, $v=0$ for 
+$x\in\text{Black}$}\,\},\\
+\mathcal{T}&=\{\,u\in H^1(\Omega):
+\text{$v=0$ for $x\in\text{DarkBlue}$
+$x\in\text{Black}$}\,\}.
+\end{align*}
+Based on the first Green identity~\eqref{eq: first Green}, the weak 
+solution~$u\in\mathcal{S}$ satisfies
+\begin{multline*}
+\int_{\text{LightBlue}}\nabla u\cdot\nabla v
+	+10\int_{\text{LightGreen}}\nabla u\cdot\nabla v\\
+	=\int_{\text{LightBlue}}v+\int_{\text{LightGreen}}4v
+	-\int_{\text{Red}}v
+\quad\text{for all $v\in\mathcal{T}$.}
+\end{multline*}
+
+\paragraph{Finite element approximation.} 
+We approximate $\Omega$ by a triangulated polygon~$\Omega_h$ and 
+define a finite dimensional trial set~$\mathcal{S}_h$ that consists 
+of all continuous, piecewise-linear functions~$v$ such that 
+\[
+v(\boldsymbol{x})=\begin{cases}
+-|\boldsymbol{x}|/2,&
+\text{$\boldsymbol{x}$ is a node in~$\text{DarkBlue}_h$,}\\
+0,&\text{$\boldsymbol{x}$ is a node in~$\text{Black}_h$,}\\
+\end{cases}
+\]
+where $\text{DarkBlue}_h$~and $\text{Black}_h$ are the parts
+of the boundary of~$\Omega_h$ corresponding to $\text{DarkBlue}$~and 
+$\text{Black}$.  The finite dimensional test 
+space~$\mathcal{T}_h$ is the set of~$\mathcal{S}_h$ consisting of 
+those~$v$ that vanish on~$\text{DarkBlue}_h$ (as well as 
+on~$\text{Black}_h$.  The finite element 
+solution~$u_h\in\mathcal{S}_h$ is then defined by
+\begin{multline*}
+\int_{\text{LightBlue}_h}\nabla u_h\cdot\nabla v
+	+10\int_{\text{LightGreen}_h}\nabla u_h\cdot\nabla v\\
+	=\int_{\text{LightBlue}_h}v+\int_{\text{LightGreen}_h}4v
+	-\int_{\text{Red}_h}v
+\quad\text{for all $v\in\mathcal{T}_h$.}
+\end{multline*}
+
+\paragraph{Computing and visualizing the solution.}  
+Use a text editor to look at the geometry description 
+in \verb!complic_keyhole.geo!, and then look at the source code in
+\verb!complic_keyhole.jl!.  Notice that the Julia script runs Gmsh 
+twice, using the latter's command-line interface.  The first call 
+performs the mesh generation, creating the file 
+\verb!complic_keyhole.msh!, and the second runs the Gmsh 
+script \verb!complic_keyhole.script! to display a surface plot of the 
+solution.  Thus, the whole process requires only the single command
+\begin{verbatim}
+julia> include("complic_keyhole.jl")
+\end{verbatim}
+to produce the output shown in Figure~\ref{fig: second soln}.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{thebibliography}{0}
 \bibitem{Gmsh}

@@ -1,3 +1,9 @@
 *.pos
 *.msh
 *.swp
+*.aux
+*.log
+*.pdf
+*.out
+*.backup
+*.synctex.gz

@@ -1,4 +1,4 @@
-# A mixed boundary-value problem.
+# A mixed boundary-value problem described in the LaTeX file mixed.tex.
 
 using FinElt
 using FinElt.PlanarPoisson

@@ -270,3 +270,22 @@ function get_nodal_vals(f::Function, mesh::Mesh)
     end
     return fvec
 end
+
+function successive_refine(shape::String, dimen::Integer, 
+                           refinements::Integer, h0::Float64)
+    # Read the file shape.geo and writes a sequence of files
+    # shape0.msh, shape1.msh, ...,
+    # by generating an initial mesh (shape0.msh) with maximum
+    # element size h0, and performing the specified number of
+    # refinements.  Thus, refinements+1 files are generated
+    # altogether.
+    infile = "$shape.geo"
+    outfile = "$(shape)0.msh"
+    run(`gmsh -optimize -$dimen -o $outfile $infile`)
+    for k = 1:refinements
+        infile = "$shape$(k-1).msh"
+        outfile = "$shape$k.msh"
+        run(`gmsh -v 0 -refine -o $outfile $infile`)
+    end
+    return
+end

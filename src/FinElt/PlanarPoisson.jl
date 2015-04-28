@@ -48,7 +48,7 @@ function barycentric(z::Matrix)
     # 
     # then the barycentric coordinates are given by
     #
-    # lambda_p = b_p dot x
+    # lambda_p = 1/3 + b_p dot ( x - centroid )
     #
     # Also compute the centroid and area of the triangle.
     b = zeros(2, 3)
@@ -67,7 +67,7 @@ function barycentric(z::Matrix)
     area /= 2
     centroid[1] = ( z[1,1] + z[1,2] + z[1,3] ) / 3
     centroid[2] = ( z[2,1] + z[2,2] + z[2,3] ) / 3
-    return b, centroid, area
+    return b, centroid, abs(area)
 end
 
 function grad_dot_grad!(A::Matrix,         # output 3x3

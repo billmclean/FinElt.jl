@@ -30,6 +30,7 @@ end
 #
 # supports keywords: points = :all | :specified (using dense output)
 #                    jacobian = G(t,y)::Function | nothing (FD)
+#                    mass = M::Matrix | nothing (I)
 function ode23s(F, y0, tspan; reltol = 1.0e-5, abstol = 1.0e-8,
                                                 jacobian=nothing,
                                                 mass=nothing,

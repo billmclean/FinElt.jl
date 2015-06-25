@@ -59,7 +59,7 @@ N = length(t)
 err = zeros(N)
 for n = 1:N
     un = get_nodal_vals(x->exact_u(x,t[n]), mesh)
-    err[n] = maximum(abs(un-u[n]))
+    err[n] = maxnorm(un-u[n])
 end
 
 finish = time()

@@ -20,11 +20,13 @@
 #
 # The exact solution is
 #
-#      u(x, y, t) = ( lambda t - 1 - exp(-lambda t) ) / lambda^2
-#                     * cos(pi x / Lx) cos(pi y / Ly)
+#                    lambda t - 1 - exp(-lambda t) 
+#      u(x, y, t) =  ----------------------------- phi(x,y)
+#                          lambda^2
 #
-# with
+# where
 #
+#      phi(x,y) = cos(pi x / Lx ) cos(pi y / Ly)
 #      lambda = a pi^2 ( 1 / Lx^2 + 1 / Ly^2 )
 #
 using FinElt
@@ -59,7 +61,7 @@ end
 maxnorm(x) = norm(x, Inf)
 
 start = time()
-mesh = read_msh_file("../rectangle/rect1.msh")    
+mesh = read_msh_file("../rectangle/rect2.msh")    
 dof = degrees_of_freedom(mesh, ASCIIString[])
 M = assembled_matrix("Omega", func_times_func!, 1.0, mesh, dof)
 S = assembled_matrix("Omega", grad_dot_grad!, a, mesh, dof)
@@ -71,7 +73,7 @@ N = length(t)
 err = zeros(N)
 for n = 1:N
     un = get_nodal_vals(x->exact_u(x,t[n]), mesh)
-    err[n] = maximum(abs(un-u[n]))
+    err[n] = maxnorm(un-u[n])
 end
 
 finish = time()

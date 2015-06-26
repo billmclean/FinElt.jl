@@ -167,7 +167,7 @@ function noduplicates(a::Vector{Int})
 end
 
 function save_nodal_scalar_field(u::Vector{Float64}, name::String, 
-                                 mesh::Mesh, fid::IOStream, 
+                                 fid::IOStream, 
                                  time=0.0, timeidx=0)
     write(fid, "\$NodeData\n")
     write(fid, "1\n")             # number of string tags
@@ -179,7 +179,7 @@ function save_nodal_scalar_field(u::Vector{Float64}, name::String,
     s = @sprintf("%d\n", timeidx)
     write(fid, s)
     write(fid, "1\n")             # number of field components
-    nonodes = size(mesh.coord, 2)
+    nonodes = length(u)
     s = @sprintf("%d\n", nonodes)
     write(fid, s)
     @assert length(u) == nonodes
@@ -191,15 +191,15 @@ function save_nodal_scalar_field(u::Vector{Float64}, name::String,
 end 
 
 function save_warp_nodal_scalar_field(u::Array{Float64}, name::String, 
-                                      mesh::Mesh, fid::IOStream, 
+                                      fid::IOStream, 
                                       time=0.0, timeidx=0)
     # Gmsh kludge to facilitate surface plotting of 2D scalar field via
     # the warp plugin.
     n = length(u)
     uwarp = zeros(3, length(u))
     uwarp[3,:] = u
-    save_nodal_scalar_field(u, name, mesh, fid, time, timeidx)
-    save_nodal_vector_field(uwarp, "$(name)_warp", mesh, fid, time, timeidx)   
+    save_nodal_scalar_field(u, name, fid, time, timeidx)
+    save_nodal_vector_field(uwarp, "$(name)_warp", fid, time, timeidx)   
 end
 
 function write_format_version(fid::IOStream)
@@ -209,7 +209,7 @@ function write_format_version(fid::IOStream)
 end
 
 function save_nodal_vector_field(u::Array{Float64,2}, name::String, 
-                                 mesh::Mesh, fid::IOStream, 
+                                 fid::IOStream, 
                                  time=0.0, timeidx=0)
     write(fid, "\$NodeData\n")
     write(fid, "1\n")             # number of string tags
@@ -221,7 +221,7 @@ function save_nodal_vector_field(u::Array{Float64,2}, name::String,
     s = @sprintf("%d\n", timeidx)
     write(fid, s)
     write(fid, "3\n")             # number of field components
-    nonodes = size(mesh.coord, 2)
+    nonodes = size(u, 2)
     s = @sprintf("%d\n", nonodes)
     write(fid, s)
     @assert size(u) == (3, nonodes)

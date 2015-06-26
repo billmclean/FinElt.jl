@@ -15,5 +15,5 @@ ufree = A \ b
 
 u = complete_soln(ufree, vp)
 write_pos_file("keyhole.pos") do fid
-    save_warp_nodal_scalar_field(u, "u", mesh, fid)
+    save_warp_nodal_scalar_field(u, "u", fid)
 end

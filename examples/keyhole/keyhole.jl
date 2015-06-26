@@ -14,6 +14,6 @@ A, b = assembled_linear_system(vp)
 ufree = A \ b
 
 u = complete_soln(ufree, vp)
-write_pos_file("keyhole.pos") do fid
+write_pos_file("keyhole.pos", "keyhole.msh") do fid
     save_warp_nodal_scalar_field(u, "u", fid)
 end

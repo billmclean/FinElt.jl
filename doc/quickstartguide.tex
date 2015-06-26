@@ -188,13 +188,9 @@ Execute the script in the usual way:
 julia> include("keyhole.jl")
 \end{verbatim}
 To visualize the solution, return to the Gmsh main window.  From 
-the \verb!File! menu, select \verb!Merge! and choose 
+the \verb!File! menu, select \verb!Open! and choose 
 \verb!keyhole.pos!; the result should look like 
-Figure~\ref{fig: postprocess}.  You might encounter a bug in Gmsh 
-that corrupts the display.  If so, select \verb!Clear! from the 
-\verb!File! menu, then use \verb!Open! (or \verb!Open recent!) to 
-reload \verb!keyhole.msh!, and finally \verb!Merge! to read 
-\verb!keyhole.pose!.
+Figure~\ref{fig: postprocess}.  
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}
@@ -343,7 +339,7 @@ where $\text{DarkBlue}_h$~and $\text{Black}_h$ are the parts
 of the boundary of~$\Omega_h$ corresponding to $\text{DarkBlue}$~and 
 $\text{Black}$.  The finite dimensional test 
 space~$\mathcal{T}_h$ is the set of~$\mathcal{S}_h$ consisting of 
-those~$v$ that vanish on~$\text{DarkBlue}_h$ (as well as 
+those~$v$ that vanish on~$\text{DarkBlue}_h$ and
 on~$\text{Black}_h$.  The finite element 
 solution~$u_h\in\mathcal{S}_h$ is then defined by
 \begin{multline*}

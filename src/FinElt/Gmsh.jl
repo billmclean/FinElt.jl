@@ -243,7 +243,20 @@ function write_pos_file(f::Function, fname::String)
         close(fid)
     end
 end
-  
+
+function write_pos_file(f::Function, posfname::String, 
+                        meshfname::String)
+    # Convenience function for use with do-syntax.
+    # Include the mesh data.
+    cp(meshfname, posfname)
+    fid = open(posfname, "a")
+    try
+        f(fid)
+    finally
+        close(fid)
+    end
+end
+
 function get_node_coords(mesh::Mesh)
    nonodes = size(mesh.coord, 2)
    x = zeros(nonodes)

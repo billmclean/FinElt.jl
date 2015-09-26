@@ -10,8 +10,9 @@ const LINE        = GeomType(1, 1, 2)
 const TRIANGLE    = GeomType(2, 2, 3)
 const TETRAHEDRON = GeomType(4, 3, 4)
 
-const GETGEOMTYPE = { 1 => LINE,  2 => TRIANGLE, 
-                      4 => TETRAHEDRON } 
+const GETGEOMTYPE = Dict(1 => LINE,  
+                         2 => TRIANGLE, 
+                         4 => TETRAHEDRON)
 
 # Mesh data type with fields
 #
@@ -28,12 +29,12 @@ const GETGEOMTYPE = { 1 => LINE,  2 => TRIANGLE,
 
 immutable Mesh
     coord    :: Array{Float64, 2}
-    physdim  :: Dict{String, Int}
-    physnum  :: Dict{String, Int}
-    physname :: Dict{Int, String}
-    elmtype  :: Dict{String, GeomType}
-    elms_of  :: Dict{String, Matrix{Int}}
-    nodes_of :: Dict{String, Vector{Int}}
+    physdim  :: Dict{ASCIIString, Int}
+    physnum  :: Dict{ASCIIString, Int}
+    physname :: Dict{Int, ASCIIString}
+    elmtype  :: Dict{ASCIIString, GeomType}
+    elms_of  :: Dict{ASCIIString, Matrix{Int}}
+    nodes_of :: Dict{ASCIIString, Vector{Int}}
 end
 
 function verify_next_line(s, f)
@@ -41,17 +42,17 @@ function verify_next_line(s, f)
     @assert strip(line) == s
 end
 
-function read_msh_file(fname::String)
+function read_msh_file(fname::ASCIIString)
     # Read a .msh file created by Gmsh and return the
     # corresponding Mesh object.
     coord = Float64[]
     nonodes = 0
     line = ""
-    elms = String[]
+    elms = ASCIIString[]
     elmcount = Dict{Int,Int}()
-    physdim  = Dict{String,Int}()
-    physnum  = Dict{String,Int}()
-    physname = Dict{Int,String}()
+    physdim  = Dict{ASCIIString,Int}()
+    physnum  = Dict{ASCIIString,Int}()
+    physname = Dict{Int,ASCIIString}()
     f = open(fname,"r") 
     while !eof(f)
         header = strip( readline(f) )
@@ -63,35 +64,35 @@ function read_msh_file(fname::String)
             verify_next_line("\$EndMeshFormat", f)
         elseif header == "\$Nodes"
             line = readline(f)
-            nonodes = int(line)
+            nonodes = parse(Int, line)
             for n = 1:nonodes
                 line = readline(f)
                 s = split(line)
-                @assert n == int(s[1])
+                @assert n == parse(Int, s[1])
                 for j = 1:3
-                   push!(coord, float64(s[j+1]))
+                   push!(coord, parse(Float64, s[j+1]))
                 end
             end
             verify_next_line("\$EndNodes", f)
         elseif header == "\$Elements"
             line = readline(f)
-            noelms = int(line)
+            noelms = parse(Int, line)
             for n = 1:noelms
                 line = readline(f)
                 push!(elms, line)
                 row = split(line)
-                physno = int(row[4])
+                physno = parse(Int, row[4])
                 elmcount[physno] = get(elmcount, physno, 0) + 1
             end
             verify_next_line("\$EndElements", f)
         elseif header == "\$PhysicalNames"
             line = readline(f)
-            nonames = int(line)
+            nonames = parse(Int, line)
             for n = 1:nonames
                 line = readline(f)
                 s = split(line)
-                dimen = int(s[1])
-                num   = int(s[2])
+                dimen = parse(Int, s[1])
+                num   = parse(Int, s[2])
                 name  = strip(s[3], '"')
                 physdim[name] = dimen
                 physnum[name] = num
@@ -113,14 +114,14 @@ function read_msh_file(fname::String)
     close(f)
     coord = reshape(coord, (3,nonodes))
 
-    elmtype = Dict{String, GeomType}()
-    elms_of = Dict{String,Matrix{Int}}()
-    nodes_of = Dict{String,Vector{Int}}()
-    k = Dict{String,Int}()
+    elmtype = Dict{ASCIIString, GeomType}()
+    elms_of = Dict{ASCIIString,Matrix{Int}}()
+    nodes_of = Dict{ASCIIString,Vector{Int}}()
+    k = Dict{ASCIIString,Int}()
     for elm in elms
         s = split(elm)
-        name = physname[int(s[4])]
-        gmsh_code = int(s[2])
+        name = physname[parse(Int, s[4])]
+        gmsh_code = parse(Int, s[2])
         if haskey(elmtype, name)
             @assert elmtype[name] == GETGEOMTYPE[gmsh_code]
         else
@@ -133,7 +134,7 @@ function read_msh_file(fname::String)
         k[name] = 0
     end
     for elm in elms
-        line = [int(s) for s in split(elm)]
+        line = [parse(Int, s) for s in split(elm)]
         # line uses the format
         # elm-number elm-type number-of-tags <tags> node-number-list
         # where the first tag is the numerical label of the physical
@@ -166,7 +167,7 @@ function noduplicates(a::Vector{Int})
     return b[1:j]
 end
 
-function save_nodal_scalar_field(u::Vector{Float64}, name::String, 
+function save_nodal_scalar_field(u::Vector{Float64}, name::ASCIIString, 
                                  fid::IOStream, 
                                  time=0.0, timeidx=0)
     write(fid, "\$NodeData\n")
@@ -190,7 +191,7 @@ function save_nodal_scalar_field(u::Vector{Float64}, name::String,
     write(fid, "\$EndNodeData\n")
 end 
 
-function save_warp_nodal_scalar_field(u::Array{Float64}, name::String, 
+function save_warp_nodal_scalar_field(u::Array{Float64}, name::ASCIIString, 
                                       fid::IOStream, 
                                       time=0.0, timeidx=0)
     # Gmsh kludge to facilitate surface plotting of 2D scalar field via
@@ -208,7 +209,7 @@ function write_format_version(fid::IOStream)
     write(fid, "\$EndMeshFormat\n")
 end
 
-function save_nodal_vector_field(u::Array{Float64,2}, name::String, 
+function save_nodal_vector_field(u::Array{Float64,2}, name::ASCIIString, 
                                  fid::IOStream, 
                                  time=0.0, timeidx=0)
     write(fid, "\$NodeData\n")
@@ -233,7 +234,7 @@ function save_nodal_vector_field(u::Array{Float64,2}, name::String,
     write(fid, "\$EndNodeData\n")
 end 
 
-function write_pos_file(f::Function, fname::String)
+function write_pos_file(f::Function, fname::ASCIIString)
     # Convenience function for use with do-syntax.
     fid = open(fname, "w")
     try
@@ -244,8 +245,8 @@ function write_pos_file(f::Function, fname::String)
     end
 end
 
-function write_pos_file(f::Function, posfname::String, 
-                        meshfname::String)
+function write_pos_file(f::Function, posfname::ASCIIString, 
+                        meshfname::ASCIIString)
     # Convenience function for use with do-syntax.
     # Include the mesh data.
     cp(meshfname, posfname)
@@ -284,7 +285,7 @@ function get_nodal_vals(f::Function, mesh::Mesh)
     return fvec
 end
 
-function successive_refine(shape::String, dimen::Integer, 
+function successive_refine(shape::ASCIIString, dimen::Integer, 
                            refinements::Integer, h0::Float64)
     # Read the file shape.geo and writes a sequence of files
     # shape0.msh, shape1.msh, ...,

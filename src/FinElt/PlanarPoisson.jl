@@ -8,7 +8,7 @@ export grad_dot_grad!, func_times_func!, source_times_func!
 export bdry_func_times_func!, bdry_source_times_func!
 export shape_params
 
-function add_bilin_form!(vp::VariationalProblem, name::String, 
+function add_bilin_form!(vp::VariationalProblem, name::ASCIIString, 
                          elm_mat!::Function, coef=1.0)
     if !(name in keys(vp.mesh.elmtype))
         error("$name: unknown physical name")
@@ -23,7 +23,7 @@ function add_bilin_form!(vp::VariationalProblem, name::String,
     return
 end
 
-function add_lin_functnl!(vp::VariationalProblem, name::String, 
+function add_lin_functnl!(vp::VariationalProblem, name::ASCIIString, 
                           elm_vec!::Function, f::Function)
     if !(name in keys(vp.mesh.elmtype))
         error("$name: unknown physical name")
@@ -158,8 +158,8 @@ function shape_params(z::Matrix)
 end
 
 function shape_params(mesh::Mesh)
-    h  = Dict{String, Vector{Float64}}()
-    sr = Dict{String, Vector{Float64}}()
+    h  = Dict{ASCIIString, Vector{Float64}}()
+    sr = Dict{ASCIIString, Vector{Float64}}()
     z = zeros(size(mesh.coord,1), 3)
     for name in keys(mesh.elms_of)
         if mesh.elmtype[name] != TRIANGLE
@@ -179,13 +179,15 @@ function shape_params(mesh::Mesh)
     return h, sr
 end
 
-const BILIN2GEOMTYPE = { grad_dot_grad!          => TRIANGLE,
-                         func_times_func!        => TRIANGLE,
-                         source_times_func!      => TRIANGLE,
-                         bdry_func_times_func!   => LINE,
-                         bdry_source_times_func! => LINE }
+const BILIN2GEOMTYPE = Dict( 
+    grad_dot_grad!          => TRIANGLE,
+    func_times_func!        => TRIANGLE,
+    source_times_func!      => TRIANGLE,
+    bdry_func_times_func!   => LINE,
+    bdry_source_times_func! => LINE)
 
-const LIN2GEOMTYPE = { source_times_func!      => TRIANGLE,
-                       bdry_source_times_func! => LINE }
+const LIN2GEOMTYPE = Dict( 
+    source_times_func!      => TRIANGLE,
+    bdry_source_times_func! => LINE)
 
 end # module

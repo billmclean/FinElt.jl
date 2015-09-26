@@ -44,7 +44,7 @@ end
 VariationalProblem(mesh::Mesh) = VariationalProblem(mesh, ASCIIString[])
 
 function assign_bdry_vals!(vp::VariationalProblem, 
-                           name::String, g::Float64)
+                           name::ASCIIString, g::Float64)
     if !(name in vp.essential_bc)
         error("$name: not listed in essential_bc")
     end
@@ -55,7 +55,7 @@ function assign_bdry_vals!(vp::VariationalProblem,
 end
 
 function assign_bdry_vals!(vp::VariationalProblem, 
-                           name::String, g::Function)
+                           name::ASCIIString, g::Function)
     if !(name in vp.essential_bc)
         error("$name: not listed in essential_bc")
     end
@@ -141,7 +141,7 @@ function assembled_linear_system(vp::VariationalProblem)
     return A, b
 end
 
-function assembled_matrix(name::String, elm_mat!::Function, 
+function assembled_matrix(name::ASCIIString, elm_mat!::Function, 
                           coef::Float64, mesh::Mesh, dof::DoF)
     nofree = length(dof.freenode)
     nofixed = length(dof.fixednode)
@@ -180,7 +180,7 @@ function assembled_matrix(name::String, elm_mat!::Function,
     return A
 end
 
-function assembled_vector(name::String, elm_vec!::Function, 
+function assembled_vector(name::ASCIIString, elm_vec!::Function, 
                           f::Function, mesh::Mesh, dof::DoF)
     nofree = length(dof.freenode)
     nofixed = length(dof.fixednode)

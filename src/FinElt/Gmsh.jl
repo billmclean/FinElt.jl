@@ -42,9 +42,13 @@ function verify_next_line(s, f)
     @assert strip(line) == s
 end
 
+"""
+mesh = read_msh_file("filename.msh")
+
+Read a .msh file created by Gmsh and return the corresponding 
+Mesh object.
+"""
 function read_msh_file(fname::ASCIIString)
-    # Read a .msh file created by Gmsh and return the
-    # corresponding Mesh object.
     coord = Float64[]
     nonodes = 0
     line = ""
@@ -151,9 +155,13 @@ function read_msh_file(fname::ASCIIString)
                 elms_of, nodes_of)
 end
 
+"""
+b = noduplicates(a)
+
+Return a vector b containing the elements of a with no duplicates, 
+and sorted in increasing order.
+"""
 function noduplicates(a::Vector{Int})
-    # Return a vector containg the elements of a with
-    # no duplicates, and sorted in increasing order.
     sort!(a)
     b = Array(Int, length(a))
     j = 1
@@ -167,7 +175,8 @@ function noduplicates(a::Vector{Int})
     return b[1:j]
 end
 
-function save_nodal_scalar_field(u::Vector{Float64}, name::ASCIIString, 
+function save_nodal_scalar_field(u::Vector{Float64}, 
+                                 name::ASCIIString, 
                                  fid::IOStream, 
                                  time=0.0, timeidx=0)
     write(fid, "\$NodeData\n")
@@ -191,11 +200,14 @@ function save_nodal_scalar_field(u::Vector{Float64}, name::ASCIIString,
     write(fid, "\$EndNodeData\n")
 end 
 
-function save_warp_nodal_scalar_field(u::Array{Float64}, name::ASCIIString, 
+"""
+Gmsh kludge to facilitate surface plotting of 2D scalar field via
+the warp plugin.
+"""
+function save_warp_nodal_scalar_field(u::Array{Float64}, 
+                                      name::ASCIIString, 
                                       fid::IOStream, 
                                       time=0.0, timeidx=0)
-    # Gmsh kludge to facilitate surface plotting of 2D scalar field via
-    # the warp plugin.
     n = length(u)
     uwarp = zeros(3, length(u))
     uwarp[3,:] = u
@@ -234,8 +246,10 @@ function save_nodal_vector_field(u::Array{Float64,2}, name::ASCIIString,
     write(fid, "\$EndNodeData\n")
 end 
 
+"""
+Convenience function for use with do-syntax.
+"""
 function write_pos_file(f::Function, fname::ASCIIString)
-    # Convenience function for use with do-syntax.
     fid = open(fname, "w")
     try
         write_format_version(fid)
@@ -245,10 +259,12 @@ function write_pos_file(f::Function, fname::ASCIIString)
     end
 end
 
+"""
+Convenience function for use with do-syntax.
+Include the mesh data.
+"""
 function write_pos_file(f::Function, posfname::ASCIIString, 
                         meshfname::ASCIIString)
-    # Convenience function for use with do-syntax.
-    # Include the mesh data.
     cp(meshfname, posfname)
     fid = open(posfname, "a")
     try
@@ -271,8 +287,10 @@ function get_node_coords(mesh::Mesh)
    return x, y, z
 end
 
+"""
+Returns the vector of nodal values of f
+"""
 function get_nodal_vals(f::Function, mesh::Mesh)
-    # Returns the vector of nodal values of f
     nonodes = size(mesh.coord, 2)
     x = zeros(3)
     fvec = zeros(nonodes)
@@ -285,14 +303,16 @@ function get_nodal_vals(f::Function, mesh::Mesh)
     return fvec
 end
 
+"""
+Read the file shape.geo and writes a sequence of files
+shape0.msh, shape1.msh, ...,
+by generating an initial mesh (shape0.msh) with maximum
+element size h0, and performing the specified number of
+refinements.  Thus, refinements+1 files are generated
+altogether.
+"""
 function successive_refine(shape::ASCIIString, dimen::Integer, 
                            refinements::Integer, h0::Float64)
-    # Read the file shape.geo and writes a sequence of files
-    # shape0.msh, shape1.msh, ...,
-    # by generating an initial mesh (shape0.msh) with maximum
-    # element size h0, and performing the specified number of
-    # refinements.  Thus, refinements+1 files are generated
-    # altogether.
     infile = "$shape.geo"
     outfile = "$(shape)0.msh"
     run(`gmsh -optimize -$dimen -clmax $h0 -o $outfile $infile`)

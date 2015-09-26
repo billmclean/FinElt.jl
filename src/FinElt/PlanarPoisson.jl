@@ -38,19 +38,21 @@ function add_lin_functnl!(vp::VariationalProblem, name::ASCIIString,
     return
 end
 
+"""
+b, centroid, area = barycentric(z)
+
+For a planar triangle with vertices z_1, z_2, z_3, 
+compute vectors b1, b2, b3 such that if
+
+x = lambda_1 z_1 + lambda_2 z_2 + lambda_3 z_3
+
+then the barycentric coordinates are given by
+
+lambda_p = 1/3 + b_p dot ( x - centroid )
+
+Also compute the centroid and area of the triangle.
+"""
 function barycentric(z::Matrix)
-    # b, centroid, area = barycentric(z)
-    #
-    # For a planar triangle with vertices z_1, z_2, z_3, 
-    # compute vectors b1, b2, b3 such that if
-    #
-    # x = lambda_1 z_1 + lambda_2 z_2 + lambda_3 z_3
-    # 
-    # then the barycentric coordinates are given by
-    #
-    # lambda_p = 1/3 + b_p dot ( x - centroid )
-    #
-    # Also compute the centroid and area of the triangle.
     b = zeros(2, 3)
     centroid = zeros(2)
     b[1,1] = z[1,1] - z[1,3]
@@ -140,11 +142,13 @@ function bdry_source_times_func!(v::Vector,     # output 3
     return
 end
 
+"""
+Returns the diameter h and shape regularity measure h^2/area 
+for the triangle with vertices z[:,1], z[:,2], z[:,3] 
+(assumed to lie in the plane, i.e., only the first two 
+components of each column are used).
+"""
 function shape_params(z::Matrix)
-    # Returns the diameter h and shape regularity measure h^2/area 
-    # for the triangle with vertices z[:,1], z[:,2], z[:,3] 
-    # (assumed to lie in the plane, i.e., only the first two 
-    # components of each column are used).
     b, centroid, area = barycentric(z)
     side = zeros(2,3)
     for p = 1:2

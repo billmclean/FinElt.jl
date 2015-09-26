@@ -1,11 +1,12 @@
-# Data structure describing the FEM degrees of freedom.
-#
-# isfree[nd]     is true if nd is free, false is nd is fixed.
-# freenode[k]    is the gmsh node number of the kth free node.
-# fixednode[k]   is the gmsh node number of the kth fixed node.
-# node2free[nd]  = k if nd = freenode[k], -1 otherwise.
-# node2fixed[nd] = k if nd = fixednode[k], -1 otherwise.
+"""
+Data structure describing the FEM degrees of freedom.
 
+isfree[nd]     is true if nd is free, false is nd is fixed.
+freenode[k]    is the gmsh node number of the kth free node.
+fixednode[k]   is the gmsh node number of the kth fixed node.
+node2free[nd]  = k if nd = freenode[k], -1 otherwise.
+node2fixed[nd] = k if nd = fixednode[k], -1 otherwise.
+"""
 immutable DoF
     isfree     :: Vector{Bool}    
     freenode   :: Vector{Integer}
@@ -66,9 +67,11 @@ function assign_bdry_vals!(vp::VariationalProblem,
     end
 end
 
+"""
+Returns the DoF object for the given mesh and essential boundary
+conditions.
+"""
 function degrees_of_freedom(mesh::Mesh, essential_bc::Array{ASCIIString})
-    # Returns the DoF object for the given mesh and essential boundary
-    # conditions.
     nonodes = size(mesh.coord, 2)
     isfree = Array(Bool, nonodes)
     fill!(isfree, true)
@@ -207,9 +210,11 @@ function assembled_vector(name::ASCIIString, elm_vec!::Function,
     return loadvec
 end
 
+"""
+Returns the vector of nodal values, including both the free
+and fixed nodes.
+"""
 function complete_soln(ufree::Vector{Float64}, vp::VariationalProblem)
-    # Returns the vector of nodal values, including both the free
-    # and fixed nodes.
     dof = vp.dof
     nofree = length(dof.freenode)
     nofixed = length(dof.fixednode)

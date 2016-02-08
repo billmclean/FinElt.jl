@@ -1,0 +1,37 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage{tikz}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage[australian]{babel}
+\usepackage{fontenc}
+\usepackage{graphicx}
+\usepackage[euler-digits]{eulervm}
+
+\title{An Eigenproblem}
+\date{9 February 2015}
+\author{William McLean}
+
+\begin{document}
+\maketitle
+\begin{center}
+\begin{tikzpicture}[scale=3]
+\draw[blue,thick] (-1,1) -- (-1,-1) -- (1,-1);
+\draw[red,thick] (-1,1) -- (0,1);
+\draw[red,thick] (1,0) -- (1,-1);
+\draw[green,thick] (1,0) 
+arc[radius=1, start angle=-90, end angle=-180];
+\node[black] at (-0.2,-0.2) {$-\nabla^2u=\lambda u$};
+\node[blue,left] at (-1,0) 
+{$\dfrac{\partial u}{\partial n}=0$};
+\node[blue,below] at (0,-1) 
+{$\dfrac{\partial u}{\partial n}=0$};
+\node[red,right] at (1,-0.5) {$u=0$};
+\node[red,above] at (-0.5,1) {$u=0$};
+\node[green,above right] at (0.25, 0.25) 
+{$\dfrac{\partial u}{\partial n}=0$};
+\end{tikzpicture}
+
+\end{center}
+ 
+\end{document}

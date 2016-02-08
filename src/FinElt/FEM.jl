@@ -24,6 +24,14 @@ immutable VariationalProblem
     ufixed       :: Vector{Float64}
 end
 
+immutable EigenProblem
+    mesh           :: Mesh
+    dof            :: DoF
+    essential_bc   :: Vector{ASCIIString}
+    LHS_bilin_form :: Vector{Any}
+    RHS_bilin_form :: Vector{Any}
+end
+
 function VariationalProblem(mesh::Mesh, 
                             essential_bc::Array{ASCIIString})
     for name in essential_bc
@@ -43,6 +51,20 @@ end
 
 # Use in case of pure Neumann bc.
 VariationalProblem(mesh::Mesh) = VariationalProblem(mesh, ASCIIString[])
+
+function EigenProblem(mesh::Mesh, essential_bc::Array{ASCIIString})
+    for name in essential_bc
+        if !(name in keys(mesh.nodes_of))
+            error("$name: unknown physical name")
+        end
+    end
+    dof = degrees_of_freedom(mesh, essential_bc)
+    LHS_bilin_form   = Any[]
+    RHS_bilin_form   = Any[]
+    nofixed = length(dof.fixednode)
+    return EigenProblem(mesh, dof, essential_bc,  
+                        LHS_bilin_form, RHS_bilin_form)
+end
 
 function assign_bdry_vals!(vp::VariationalProblem, 
                            name::ASCIIString, g::Float64)
@@ -143,6 +165,33 @@ function assembled_linear_system(vp::VariationalProblem)
     end
     return A, b
 end
+
+function assembled_eigenproblem_matrices(ep::EigenProblem)
+    mesh = ep.mesh
+    dof = ep.dof
+    nofree = length(dof.freenode)
+    nofixed = length(dof.fixednode)
+    A = sparse(Int64[], Int64[], Float64[], nofree, nofree)
+    B = sparse(Int64[], Int64[], Float64[], nofree, nofree)
+    for (name, elm_mat!, coef) in ep.LHS_bilin_form
+        next = assembled_matrix(name, elm_mat!, coef, mesh, dof)
+        A += next[:,1:nofree]
+    end
+    for (name, elm_mat!, coef) in ep.RHS_bilin_form
+        next = assembled_matrix(name, elm_mat!, coef, mesh, dof)
+        B += next[:,1:nofree]
+    end
+    return A, B
+end
+
+function assembled_matrix(name::ASCIIString, elm_mat!::Function, 
+                          coef::Float64, mesh::Mesh, dof::DoF)
+    nofree = length(dof.freenode)
+    nofixed = length(dof.fixednode)
+    isfree = dof.isfree
+    I = Int64[]
+    J = Int64[]
+    V = Float64[]
 
 function assembled_matrix(name::ASCIIString, elm_mat!::Function, 
                           coef::Float64, mesh::Mesh, dof::DoF)

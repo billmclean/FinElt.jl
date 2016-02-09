@@ -39,7 +39,7 @@ function add_lin_functnl!(vp::VariationalProblem, name::ASCIIString,
 end
 
 function add_bilin_form!(ep::EigenProblem, name::ASCIIString, 
-                         elm_mat!::Function, side::ASCIIString, 
+                         elm_mat!::Function, side::Symbol, 
                          coef=1.0)
     if !(name in keys(ep.mesh.elmtype))
         error("$name: unknown physical name")
@@ -50,9 +50,9 @@ function add_bilin_form!(ep::EigenProblem, name::ASCIIString,
     if BILIN2GEOMTYPE[elm_mat!] != ep.mesh.elmtype[name]
         error("Element type does not match bilinear form")
     end
-    if side == "LHS"
+    if side == :LHS
         push!(ep.LHS_bilin_form, (name, elm_mat!,coef))
-    elseif side == "RHS"
+    elseif side == :RHS
         push!(ep.RHS_bilin_form, (name, elm_mat!,coef))
     else
         error("$side: illegal argument")

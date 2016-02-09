@@ -3,7 +3,7 @@
 using FinElt
 using FinElt.PlanarPoisson
 
-h = 0.05
+const h = 0.05
 run(`gmsh -2 -clmax $h -o roundL.msh roundL.geo`)
 
 mesh = read_msh_file("roundL.msh")

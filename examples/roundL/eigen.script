@@ -13,4 +13,3 @@ Mesh.SurfaceEdges = 0;
 Plugin(Warp).View = 2*j-2;
 Plugin(Warp).OtherView = 2*j-1;
 Plugin(Warp).Run;
-General.ScaleZ = 0.5;

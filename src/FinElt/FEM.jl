@@ -192,15 +192,6 @@ function assembled_matrix(name::ASCIIString, elm_mat!::Function,
     I = Int64[]
     J = Int64[]
     V = Float64[]
-
-function assembled_matrix(name::ASCIIString, elm_mat!::Function, 
-                          coef::Float64, mesh::Mesh, dof::DoF)
-    nofree = length(dof.freenode)
-    nofixed = length(dof.fixednode)
-    isfree = dof.isfree
-    I = Int64[]
-    J = Int64[]
-    V = Float64[]
     elm = mesh.elms_of[name] 
     nonodes_per_elm = size(elm, 1)
     elm_A = zeros(nonodes_per_elm, nonodes_per_elm)
@@ -277,4 +268,17 @@ function complete_soln(ufree::Vector{Float64}, vp::VariationalProblem)
         u[nd] = vp.ufixed[k]
     end
     return u
+end
+
+function complete_soln(vfree::Matrix{Float64}, ep::EigenProblem)
+    dof = ep.dof
+    nofree = length(dof.freenode)
+    nofixed = length(dof.fixednode)
+    nev = size(vfree, 2)
+    v = zeros(nofree+nofixed, nev)
+    for j = 1:nev, k = 1:nofree
+        nd = dof.freenode[k]
+        v[nd,j] = vfree[k,j]
+    end    
+    return v
 end

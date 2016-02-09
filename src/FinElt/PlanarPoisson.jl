@@ -56,6 +56,7 @@ function add_bilin_form!(ep::EigenProblem, name::ASCIIString,
         push!(ep.RHS_bilin_form, (name, elm_mat!,coef))
     else
         error("$side: illegal argument")
+    end
     return
 end
 

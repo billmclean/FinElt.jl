@@ -9,8 +9,8 @@ run(`gmsh -2 -clmax $h -o roundL.msh roundL.geo`)
 mesh = read_msh_file("roundL.msh")
 essential_bc = [ "Dirichlet" ]
 ep = EigenProblem(mesh, essential_bc)
-add_bilin_form!(ep, "Omega", grad_dot_grad!,   "LHS")
-add_bilin_form!(ep, "Omega", func_times_func!, "RHS")
+add_bilin_form!(ep, "Omega", grad_dot_grad!,   :LHS)
+add_bilin_form!(ep, "Omega", func_times_func!, :RHS)
 
 A, B = assembled_eigenproblem_matrices(ep)
 
@@ -24,4 +24,4 @@ write_pos_file("roundL.pos") do fid
     end
 end
 
-#run(`gmsh eigen.script`)
+run(`gmsh eigen.script`)

@@ -290,29 +290,37 @@ end
 """
 Convenience function returns mesh parameter h.
 """
-function get_mesh_h(mesh::Mesh)
+function get_mesh_h(mesh::Mesh, name)
     x, y, z = get_node_coords(mesh)
     h = 0.0
-    pt = zeros(3,3)
-    for name in mesh.physname
-        elm = mesh.elms_of[name]
-        etype = mesh.elmtype[name]
-        if etype == LINE
-
-        elseif etype == TRIANGLE
-            for k = 1:size(elm,2)
-                for nd = 1:3
-                    pt[:,nd] = elms[:,k]      
-                end
-                s1 = norm(pt[:,2]-pt[:,1])
-                s2 = norm(pt[:,3]-pt[:,2])
-                s3 = norm(pt[:,1]-pt[:,3])
-                diam = max(s1, s2, s3)
-                h = max(h, diam)
+    elm = mesh.elms_of[name]
+    etype = mesh.elmtype[name]
+    if etype == LINE
+        pt = zeros(3,2)
+        for k = 1:size(elm,2)
+            for nd = 1:2
+                pt[1,nd] = x[elms[1,k]]     
+                pt[2,nd] = y[elms[2,k]]
+                pt[3,nd] = z[elms[3,k]]
             end
-        else
-            error("Not implemented for elements of type $etype")
+            h = max(h, norm(pt[:,2]-pt[:,1]))
         end
+    elseif etype == TRIANGLE
+        pt = zeros(3,3)
+        for k = 1:size(elm,2)
+            for nd = 1:3
+                pt[1,nd] = x[elms[1,k]]     
+                pt[2,nd] = y[elms[2,k]]
+                pt[3,nd] = z[elms[3,k]]
+            end
+            s1 = norm(pt[:,2]-pt[:,1])
+            s2 = norm(pt[:,3]-pt[:,2])
+            s3 = norm(pt[:,1]-pt[:,3])
+            diam = max(s1, s2, s3)
+            h = max(h, diam)
+        end
+    else
+        error("Not implemented for elements of type $etype")
     end
     return h
 end

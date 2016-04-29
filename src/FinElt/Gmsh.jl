@@ -299,9 +299,9 @@ function get_mesh_h(mesh::Mesh, name)
         pt = zeros(3,2)
         for k = 1:size(elm,2)
             for nd = 1:2
-                pt[1,nd] = x[elms[1,k]]     
-                pt[2,nd] = y[elms[2,k]]
-                pt[3,nd] = z[elms[3,k]]
+                pt[1,nd] = x[elm[nd,k]]     
+                pt[2,nd] = y[elm[nd,k]]
+                pt[3,nd] = z[elm[nd,k]]
             end
             h = max(h, norm(pt[:,2]-pt[:,1]))
         end
@@ -309,9 +309,9 @@ function get_mesh_h(mesh::Mesh, name)
         pt = zeros(3,3)
         for k = 1:size(elm,2)
             for nd = 1:3
-                pt[1,nd] = x[elms[1,k]]     
-                pt[2,nd] = y[elms[2,k]]
-                pt[3,nd] = z[elms[3,k]]
+                pt[1,nd] = x[elm[nd,k]]     
+                pt[2,nd] = y[elm[nd,k]]
+                pt[3,nd] = z[elm[nd,k]]
             end
             s1 = norm(pt[:,2]-pt[:,1])
             s2 = norm(pt[:,3]-pt[:,2])

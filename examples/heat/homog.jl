@@ -48,7 +48,7 @@ maxnorm(x) = norm(x, Inf)
 
 start = time()
 mesh = read_msh_file("../rectangle/rect2.msh")    
-dof = degrees_of_freedom(mesh, ASCIIString[])
+dof = degrees_of_freedom(mesh, String[])
 M = assembled_matrix("Omega", func_times_func!, 1.0, mesh, dof)
 S = assembled_matrix("Omega", grad_dot_grad!, a, mesh, dof)
 u0 = get_nodal_vals(x->exact_u(x,0.0), mesh)

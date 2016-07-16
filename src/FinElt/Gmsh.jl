@@ -29,12 +29,12 @@ const GETGEOMTYPE = Dict(1 => LINE,
 
 immutable Mesh
     coord    :: Array{Float64, 2}
-    physdim  :: Dict{ASCIIString, Int}
-    physnum  :: Dict{ASCIIString, Int}
-    physname :: Dict{Int, ASCIIString}
-    elmtype  :: Dict{ASCIIString, GeomType}
-    elms_of  :: Dict{ASCIIString, Matrix{Int}}
-    nodes_of :: Dict{ASCIIString, Vector{Int}}
+    physdim  :: Dict{String, Int}
+    physnum  :: Dict{String, Int}
+    physname :: Dict{Int, String}
+    elmtype  :: Dict{String, GeomType}
+    elms_of  :: Dict{String, Matrix{Int}}
+    nodes_of :: Dict{String, Vector{Int}}
 end
 
 function verify_next_line(s, f)
@@ -48,15 +48,15 @@ mesh = read_msh_file("filename.msh")
 Read a .msh file created by Gmsh and return the corresponding 
 Mesh object.
 """
-function read_msh_file(fname::ASCIIString)
+function read_msh_file(fname::String)
     coord = Float64[]
     nonodes = 0
     line = ""
-    elms = ASCIIString[]
+    elms = String[]
     elmcount = Dict{Int,Int}()
-    physdim  = Dict{ASCIIString,Int}()
-    physnum  = Dict{ASCIIString,Int}()
-    physname = Dict{Int,ASCIIString}()
+    physdim  = Dict{String,Int}()
+    physnum  = Dict{String,Int}()
+    physname = Dict{Int,String}()
     f = open(fname,"r") 
     while !eof(f)
         header = strip( readline(f) )
@@ -118,10 +118,10 @@ function read_msh_file(fname::ASCIIString)
     close(f)
     coord = reshape(coord, (3,nonodes))
 
-    elmtype = Dict{ASCIIString, GeomType}()
-    elms_of = Dict{ASCIIString,Matrix{Int}}()
-    nodes_of = Dict{ASCIIString,Vector{Int}}()
-    k = Dict{ASCIIString,Int}()
+    elmtype = Dict{String, GeomType}()
+    elms_of = Dict{String,Matrix{Int}}()
+    nodes_of = Dict{String,Vector{Int}}()
+    k = Dict{String,Int}()
     for elm in elms
         s = split(elm)
         name = physname[parse(Int, s[4])]
@@ -176,7 +176,7 @@ function noduplicates(a::Vector{Int})
 end
 
 function save_nodal_scalar_field(u::Vector{Float64}, 
-                                 name::ASCIIString, 
+                                 name::String, 
                                  fid::IOStream, 
                                  time=0.0, timeidx=0)
     write(fid, "\$NodeData\n")
@@ -205,7 +205,7 @@ Gmsh kludge to facilitate surface plotting of 2D scalar field via
 the warp plugin.
 """
 function save_warp_nodal_scalar_field(u::Array{Float64}, 
-                                      name::ASCIIString, 
+                                      name::String, 
                                       fid::IOStream, 
                                       time=0.0, timeidx=0)
     n = length(u)
@@ -221,7 +221,7 @@ function write_format_version(fid::IOStream)
     write(fid, "\$EndMeshFormat\n")
 end
 
-function save_nodal_vector_field(u::Array{Float64,2}, name::ASCIIString, 
+function save_nodal_vector_field(u::Array{Float64,2}, name::String, 
                                  fid::IOStream, 
                                  time=0.0, timeidx=0)
     write(fid, "\$NodeData\n")
@@ -249,7 +249,7 @@ end
 """
 Convenience function for use with do-syntax.
 """
-function write_pos_file(f::Function, fname::ASCIIString)
+function write_pos_file(f::Function, fname::String)
     fid = open(fname, "w")
     try
         write_format_version(fid)
@@ -263,8 +263,8 @@ end
 Convenience function for use with do-syntax.
 Include the mesh data.
 """
-function write_pos_file(f::Function, posfname::ASCIIString, 
-                        meshfname::ASCIIString)
+function write_pos_file(f::Function, posfname::String, 
+                        meshfname::String)
     cp(meshfname, posfname)
     fid = open(posfname, "a")
     try
@@ -349,7 +349,7 @@ element size h0, and performing the specified number of
 refinements.  Thus, refinements+1 files are generated
 altogether.
 """
-function successive_refine(shape::ASCIIString, dimen::Integer, 
+function successive_refine(shape::String, dimen::Integer, 
                            refinements::Integer, h0::Float64)
     infile = "$shape.geo"
     outfile = "$(shape)0.msh"

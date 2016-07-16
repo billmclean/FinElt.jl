@@ -8,7 +8,7 @@ export grad_dot_grad!, func_times_func!, source_times_func!
 export bdry_func_times_func!, bdry_source_times_func!
 export shape_params
 
-function add_bilin_form!(vp::VariationalProblem, name::ASCIIString, 
+function add_bilin_form!(vp::VariationalProblem, name::String, 
                          elm_mat!::Function, coef=1.0)
     if !(name in keys(vp.mesh.elmtype))
         error("$name: unknown physical name")
@@ -23,7 +23,7 @@ function add_bilin_form!(vp::VariationalProblem, name::ASCIIString,
     return
 end
 
-function add_lin_functnl!(vp::VariationalProblem, name::ASCIIString, 
+function add_lin_functnl!(vp::VariationalProblem, name::String, 
                           elm_vec!::Function, f::Function)
     if !(name in keys(vp.mesh.elmtype))
         error("$name: unknown physical name")
@@ -38,7 +38,7 @@ function add_lin_functnl!(vp::VariationalProblem, name::ASCIIString,
     return
 end
 
-function add_bilin_form!(ep::EigenProblem, name::ASCIIString, 
+function add_bilin_form!(ep::EigenProblem, name::String, 
                          elm_mat!::Function, side::Symbol, 
                          coef=1.0)
     if !(name in keys(ep.mesh.elmtype))
@@ -184,8 +184,8 @@ function shape_params(z::Matrix)
 end
 
 function shape_params(mesh::Mesh)
-    h  = Dict{ASCIIString, Vector{Float64}}()
-    sr = Dict{ASCIIString, Vector{Float64}}()
+    h  = Dict{String, Vector{Float64}}()
+    sr = Dict{String, Vector{Float64}}()
     z = zeros(size(mesh.coord,1), 3)
     for name in keys(mesh.elms_of)
         if mesh.elmtype[name] != TRIANGLE

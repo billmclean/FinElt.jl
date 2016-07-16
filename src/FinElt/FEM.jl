@@ -18,7 +18,7 @@ end
 immutable VariationalProblem
     mesh         :: Mesh
     dof          :: DoF
-    essential_bc :: Vector{ASCIIString}
+    essential_bc :: Vector{String}
     bilin_form   :: Vector{Any}
     lin_functnl  :: Vector{Any}
     ufixed       :: Vector{Float64}
@@ -27,13 +27,13 @@ end
 immutable EigenProblem
     mesh           :: Mesh
     dof            :: DoF
-    essential_bc   :: Vector{ASCIIString}
+    essential_bc   :: Vector{String}
     LHS_bilin_form :: Vector{Any}
     RHS_bilin_form :: Vector{Any}
 end
 
 function VariationalProblem(mesh::Mesh, 
-                            essential_bc::Array{ASCIIString})
+                            essential_bc::Array{String})
     for name in essential_bc
         if !(name in keys(mesh.nodes_of))
             error("$name: unknown physical name")
@@ -50,9 +50,9 @@ function VariationalProblem(mesh::Mesh,
 end
 
 # Use in case of pure Neumann bc.
-VariationalProblem(mesh::Mesh) = VariationalProblem(mesh, ASCIIString[])
+VariationalProblem(mesh::Mesh) = VariationalProblem(mesh, String[])
 
-function EigenProblem(mesh::Mesh, essential_bc::Array{ASCIIString})
+function EigenProblem(mesh::Mesh, essential_bc::Array{String})
     for name in essential_bc
         if !(name in keys(mesh.nodes_of))
             error("$name: unknown physical name")
@@ -67,7 +67,7 @@ function EigenProblem(mesh::Mesh, essential_bc::Array{ASCIIString})
 end
 
 function assign_bdry_vals!(vp::VariationalProblem, 
-                           name::ASCIIString, g::Float64)
+                           name::String, g::Float64)
     if !(name in vp.essential_bc)
         error("$name: not listed in essential_bc")
     end
@@ -78,7 +78,7 @@ function assign_bdry_vals!(vp::VariationalProblem,
 end
 
 function assign_bdry_vals!(vp::VariationalProblem, 
-                           name::ASCIIString, g::Function)
+                           name::String, g::Function)
     if !(name in vp.essential_bc)
         error("$name: not listed in essential_bc")
     end
@@ -93,7 +93,7 @@ end
 Returns the DoF object for the given mesh and essential boundary
 conditions.
 """
-function degrees_of_freedom(mesh::Mesh, essential_bc::Array{ASCIIString})
+function degrees_of_freedom(mesh::Mesh, essential_bc::Array{String})
     nonodes = size(mesh.coord, 2)
     isfree = Array(Bool, nonodes)
     fill!(isfree, true)
@@ -184,7 +184,7 @@ function assembled_eigenproblem_matrices(ep::EigenProblem)
     return A, B
 end
 
-function assembled_matrix(name::ASCIIString, elm_mat!::Function, 
+function assembled_matrix(name::String, elm_mat!::Function, 
                           coef::Float64, mesh::Mesh, dof::DoF)
     nofree = length(dof.freenode)
     nofixed = length(dof.fixednode)
@@ -223,7 +223,7 @@ function assembled_matrix(name::ASCIIString, elm_mat!::Function,
     return A
 end
 
-function assembled_vector(name::ASCIIString, elm_vec!::Function, 
+function assembled_vector(name::String, elm_vec!::Function, 
                           f::Function, mesh::Mesh, dof::DoF)
     nofree = length(dof.freenode)
     nofixed = length(dof.fixednode)

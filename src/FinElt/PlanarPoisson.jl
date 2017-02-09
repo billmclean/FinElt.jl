@@ -3,7 +3,7 @@ module PlanarPoisson
 importall FinElt
 
 export add_bilin_form!, add_lin_functnl!
-export barycentric
+export barycentric, barycentric!
 export grad_dot_grad!, func_times_func!, source_times_func!
 export bdry_func_times_func!, bdry_source_times_func!
 export shape_params
@@ -88,10 +88,10 @@ function barycentric(z::Matrix)
 
     b[1,3] = -b[1,1] - b[1,2]
     b[2,3] = -b[2,1] - b[2,2]
-    area /= 2
+    area = abs(area) / 2
     centroid[1] = ( z[1,1] + z[1,2] + z[1,3] ) / 3
     centroid[2] = ( z[2,1] + z[2,2] + z[2,3] ) / 3
-    return b, centroid, abs(area)
+    return b, centroid, area
 end
 
 function grad_dot_grad!(A::Matrix,         # output 3x3
@@ -108,6 +108,25 @@ function grad_dot_grad!(A::Matrix,         # output 3x3
             A[p,q] = A[q,p]
         end
     end
+    return
+end                    
+
+function grad_dot_grad!(A::Matrix,         # output 3x3
+                        z::Matrix,         # input
+                        coef::Function)    
+    # A = element stiffness matrix
+    b, centroid, area = barycentric(z)
+    for q=1:3
+        for p = q:3
+            A[p,q] = area * ( b[1,p] * b[1,q] + b[2,p] * b[2,q] )
+        end
+    end
+    for q = 2:3
+        for p = 1:q-1
+            A[p,q] = A[q,p]
+        end
+    end
+    scale!(A, coef(centroid))
     return
 end                    
 

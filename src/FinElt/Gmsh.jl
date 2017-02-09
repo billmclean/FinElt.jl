@@ -290,6 +290,15 @@ end
 """
 Convenience function returns mesh parameter h.
 """
+function get_mesh_h(mesh::Mesh)
+    h = 0.0
+    for name in keys(mesh.physnum)
+        next_h = get_mesh_h(mesh, name)
+	h = h > next_h ? h : next_h
+    end
+    return h
+end
+
 function get_mesh_h(mesh::Mesh, name)
     x, y, z = get_node_coords(mesh)
     h = 0.0
@@ -323,6 +332,20 @@ function get_mesh_h(mesh::Mesh, name)
         error("Not implemented for elements of type $etype")
     end
     return h
+end
+
+function count_elms(mesh::Mesh, elmtype::GeomType)
+    n = 0
+    for name in keys(mesh.physnum)
+        if mesh.elmtype[name] == elmtype
+	    n += count_elms(mesh, name)
+	end
+    end
+    return n
+end
+
+function count_elms(mesh::Mesh, name)
+    return size(mesh.elms_of[name], 2)
 end
 
 """

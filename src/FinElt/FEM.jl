@@ -184,49 +184,23 @@ function assembled_eigenproblem_matrices(ep::EigenProblem)
     return A, B
 end
 
-function assembled_matrix(name::String, elm_mat!::Function, 
-                          coef::Float64, mesh::Mesh, dof::DoF)
-    nofree = length(dof.freenode)
-    nofixed = length(dof.fixednode)
-    isfree = dof.isfree
-    I = Int64[]
-    J = Int64[]
-    V = Float64[]
-    elm = mesh.elms_of[name] 
-    nonodes_per_elm = size(elm, 1)
-    elm_A = zeros(nonodes_per_elm, nonodes_per_elm)
-    z = zeros(size(mesh.coord,1), nonodes_per_elm)
-    for k = 1:size(elm, 2)
-        for i = 1:size(z,1), p = 1:nonodes_per_elm
-            z[i,p] = mesh.coord[i,elm[p,k]]
-        end
-        elm_mat!(elm_A, z)
-        for p = 1:nonodes_per_elm
-            if !isfree[elm[p,k]]
-                continue
-            end
-            for q = 1:nonodes_per_elm
-                push!(I, dof.node2free[elm[p,k]])
-                if isfree[elm[q,k]]
-                    push!(J, dof.node2free[elm[q,k]])
-                else
-                    push!(J, nofree + dof.node2fixed[elm[q,k]])
-                end
-                push!(V, elm_A[p,q])
-            end
-        end
-    end
-    A = sparse(I, J, V, nofree, nofree+nofixed)
-    if coef != 1.0
-        scale!(A.nzval, coef)
-    end
-    return A
+function element_matrix(elm_A::Matrix{Float64}, z::Matrix{Float64}, 
+                        coef::Union{Float64,Function}, k::Int64, elm_mat!::Function)
+    elm_mat!(elm_A, z, coef)
+end
+
+function element_matrix(elm_A::Matrix{Float64}, z::Matrix{Float64}, 
+                        coef::Vector{Float64}, k::Int64, elm_mat!::Function)
+    elm_mat!(elm_A, z, coef[k])
 end
 
 function assembled_matrix(name::String, elm_mat!::Function, 
-                          coef::Function, mesh::Mesh, dof::DoF)
+                          coef::Union{Float64, Function, Vector{Float64}},
+                          mesh::Mesh, dof::DoF)
     # name = physical name of sub-domain
+    # coef    = constant coefficient
     # coef(x) = value of coef at x
+    # coef[j] = value of coef at centroid of jth element
     nofree = length(dof.freenode)
     nofixed = length(dof.fixednode)
     isfree = dof.isfree
@@ -241,7 +215,7 @@ function assembled_matrix(name::String, elm_mat!::Function,
         for i = 1:size(z,1), p = 1:nonodes_per_elm
             z[i,p] = mesh.coord[i,elm[p,k]]
         end
-        elm_mat!(elm_A, z, coef)
+        element_matrix(elm_A, z, coef, k, elm_mat!)
         for p = 1:nonodes_per_elm
             if !isfree[elm[p,k]]
                 continue

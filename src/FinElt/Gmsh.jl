@@ -16,25 +16,28 @@ const GETGEOMTYPE = Dict(1 => LINE,
 
 # Mesh data type with fields
 #
-# coord[:,n]         = x, y, z coordinates of node n
-# physname[m]        = string label of physical group with
-#                      the numerical label 'm'
-# physnum[s]         = numerical label of physical group
-#                      the string label 's'
-# elmtype[physname]  = element type for elements in physname
-# elms_of[physname]  = array whose columns give the node numbers
-#                      of the elements in physname
-# nodes_of[physname] = nodes in physname
+# coord[:,n]          = x, y, z coordinates of node n
+# physname[m]         = string label of physical group with
+#                       the numerical label 'm'
+# physnum[s]          = numerical label of physical group
+#                       the string label 's'
+# elmtype[physname]   = element type for elements in physname
+# elms_of[physname]   = array whose columns give the node numbers
+#                       of the elements in physname
+# elmnbrs_of[physnam] = Gmsh element numbers 
+#                       of the elements in physname
+# nodes_of[physname]  = nodes in physname
 #
 
 immutable Mesh
-    coord    :: Array{Float64, 2}
-    physdim  :: Dict{String, Int}
-    physnum  :: Dict{String, Int}
-    physname :: Dict{Int, String}
-    elmtype  :: Dict{String, GeomType}
-    elms_of  :: Dict{String, Matrix{Int}}
-    nodes_of :: Dict{String, Vector{Int}}
+    coord      :: Array{Float64, 2}
+    physdim    :: Dict{String, Int}
+    physnum    :: Dict{String, Int}
+    physname   :: Dict{Int, String}
+    elmtype    :: Dict{String, GeomType}
+    elms_of    :: Dict{String, Matrix{Int}}
+    elmnbrs_of :: Dict{String, Vector{Int}}
+    nodes_of   :: Dict{String, Vector{Int}}
 end
 
 function verify_next_line(s, f)
@@ -118,9 +121,10 @@ function read_msh_file(fname::String)
     close(f)
     coord = reshape(coord, (3,nonodes))
 
-    elmtype = Dict{String, GeomType}()
-    elms_of = Dict{String,Matrix{Int}}()
-    nodes_of = Dict{String,Vector{Int}}()
+    elmtype    = Dict{String, GeomType}()
+    elms_of    = Dict{String,Matrix{Int}}()
+    elmnbrs_of = Dict{String,Vector{Int}}()
+    nodes_of   = Dict{String,Vector{Int}}()
     k = Dict{String,Int}()
     for elm in elms
         s = split(elm)
@@ -133,8 +137,9 @@ function read_msh_file(fname::String)
         end
     end
     for (name, element_type) in elmtype
-        elms_of[name] = zeros(Float64, element_type.nonodes, 
-                              elmcount[physnum[name]])
+        noelms = elmcount[physnum[name]]
+        elms_of[name]    = zeros(Int64, element_type.nonodes, noelms)
+        elmnbrs_of[name] = zeros(Int64, noelms)
         k[name] = 0
     end
     for elm in elms
@@ -146,13 +151,14 @@ function read_msh_file(fname::String)
         notags = line[3]
         name = physname[line[4]]
         k[name] += 1 
-        elms_of[name][:,k[name]] = line[notags+4:end]
+        elms_of[name][:,k[name]]  = line[notags+4:end]
+        elmnbrs_of[name][k[name]] = line[1]
     end
     for (name, elm) in elms_of
         nodes_of[name] = noduplicates(elm[:])
     end
     return Mesh(coord, physdim, physnum, physname, elmtype, 
-                elms_of, nodes_of)
+                elms_of, elmnbrs_of, nodes_of)
 end
 
 """
@@ -192,7 +198,6 @@ function save_nodal_scalar_field(u::Vector{Float64},
     nonodes = length(u)
     s = @sprintf("%d\n", nonodes)
     write(fid, s)
-    @assert length(u) == nonodes
     for nd = 1:nonodes
         s = @sprintf("%d  %.15e\n", nd, u[nd])
         write(fid, s)
@@ -237,13 +242,45 @@ function save_nodal_vector_field(u::Array{Float64,2}, name::String,
     nonodes = size(u, 2)
     s = @sprintf("%d\n", nonodes)
     write(fid, s)
-    @assert size(u) == (3, nonodes)
+    @assert size(u,1) == 3
     for nd = 1:nonodes
         s = @sprintf("%d  %.15e  %.15e  %.15e\n", 
                      nd, u[1,nd], u[2,nd], u[3,nd])
         write(fid, s)
     end
     write(fid, "\$EndNodeData\n")
+end 
+
+function save_elm_scalar_field(u::Dict{String,Vector{Float64}}, 
+                               name::String, 
+                               mesh::Mesh, elmtype::GeomType,
+                               fid::IOStream, 
+                               time=0.0, timeidx=0)
+    write(fid, "\$ElementData\n")
+    write(fid, "1\n")             # number of string tags
+    write(fid, "\"$name\"\n")     # label for scalar field u
+    write(fid, "1\n")             # number of real tags
+    s = @sprintf("%.15e\n", time)
+    write(fid, s)
+    write(fid, "3\n")             # number of integer tags
+    s = @sprintf("%d\n", timeidx)
+    write(fid, s)
+    write(fid, "1\n")             # number of field components
+    noelms = count_elms(mesh, elmtype)
+    s = @sprintf("%d\n", noelms)
+    write(fid, s)
+    for (name, tp) in mesh.elmtype
+        if tp == elmtype
+            elms    = mesh.elms_of[name]
+            elmnbrs = mesh.elmnbrs_of[name]
+            for k = 1:size(elms,2)
+                nbr = elmnbrs[k]
+                s = @sprintf("%d  %.15e\n", nbr, u[name][k])
+                write(fid, s)
+            end
+        end
+    end
+    write(fid, "\$EndElementData\n")
 end 
 
 """

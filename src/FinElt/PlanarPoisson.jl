@@ -3,7 +3,7 @@ module PlanarPoisson
 importall FinElt
 
 export add_bilin_form!, add_lin_functnl!
-export barycentric, barycentric!
+export barycentric, barycentric!, centroids_of
 export grad_dot_grad!, func_times_func!, source_times_func!
 export bdry_func_times_func!, bdry_source_times_func!
 export shape_params
@@ -61,7 +61,7 @@ function add_bilin_form!(ep::EigenProblem, name::String,
 end
 
 """
-b, centroid, area = barycentric(z)
+b, area = barycentric(z)
 
 For a planar triangle with vertices z_1, z_2, z_3, 
 compute vectors b1, b2, b3 such that if
@@ -72,11 +72,10 @@ then the barycentric coordinates are given by
 
 lambda_p = 1/3 + b_p dot ( x - centroid )
 
-Also compute the centroid and area of the triangle.
+Also compute the area of the triangle.
 """
 function barycentric(z::Matrix)
     b = zeros(2, 3)
-    centroid = zeros(2)
     b[1,1] = z[1,1] - z[1,3]
     b[2,1] = z[2,1] - z[2,3]
     b[1,2] = z[1,2] - z[1,3]
@@ -89,15 +88,36 @@ function barycentric(z::Matrix)
     b[1,3] = -b[1,1] - b[1,2]
     b[2,3] = -b[2,1] - b[2,2]
     area = abs(area) / 2
-    centroid[1] = ( z[1,1] + z[1,2] + z[1,3] ) / 3
-    centroid[2] = ( z[2,1] + z[2,2] + z[2,3] ) / 3
-    return b, centroid, area
+    return b, area
+end
+
+function centroid(z::Matrix)
+    cntrd = zeros(2)
+    cntrd[1] = ( z[1,1] + z[1,2] + z[1,3] ) / 3
+    cntrd[2] = ( z[2,1] + z[2,2] + z[2,3] ) / 3
+    return cntrd
+end
+
+function centroids_of(mesh::Mesh, name::String)
+    noelms = count_elms(mesh, name)
+    elm = mesh.elms_of[name]
+    @assert mesh.elmtype[name] == TRIANGLE
+    cntrd = zeros(2, noelms)
+    z = zeros(2, 3)
+    for k = 1:noelms
+        for p = 1:3, i = 1:2
+            z[i,p] = mesh.coord[i,elm[p,k]]
+        end
+#        println(z)
+        cntrd[:,k] = centroid(z)
+    end
+    return cntrd
 end
 
 function grad_dot_grad!(A::Matrix,         # output 3x3
                         z::Matrix)         # input
     # A = element stiffness matrix
-    b, centroid, area = barycentric(z)
+    b, area = barycentric(z)
     for q=1:3
         for p = q:3
             A[p,q] = area * ( b[1,p] * b[1,q] + b[2,p] * b[2,q] )
@@ -113,31 +133,46 @@ end
 
 function grad_dot_grad!(A::Matrix,         # output 3x3
                         z::Matrix,         # input
+                        coef::Float64      )    
+    # A = element stiffness matrix
+    grad_dot_grad!(A, z)
+    scale!(A, coef)
+    return
+end                    
+
+function grad_dot_grad!(A::Matrix,         # output 3x3
+                        z::Matrix,         # input
                         coef::Function)    
     # A = element stiffness matrix
-    b, centroid, area = barycentric(z)
-    for q=1:3
-        for p = q:3
-            A[p,q] = area * ( b[1,p] * b[1,q] + b[2,p] * b[2,q] )
-        end
-    end
-    for q = 2:3
-        for p = 1:q-1
-            A[p,q] = A[q,p]
-        end
-    end
-    scale!(A, coef(centroid))
+    cntrd = centroid(z)
+    grad_dot_grad!(A, z, coef(cntrd))
     return
 end                    
 
 function func_times_func!(A::Matrix,       # output 3x3
-                          z::Matrix)       # inputs 2x3
+                          z::Matrix)       # input  2x3
     # A = element mass matrix
-    b, centroid, area = barycentric(z)
+    b, area = barycentric(z)
     fill!(A, area/12)
     for p=1:3
         A[p,p] *= 2
     end
+    return
+end
+
+function func_times_func!(A::Matrix,    
+                          z::Matrix,     
+                          coef::Float64)
+    func_times_func!(A, z)
+    scale!(A, coef)
+    return
+end
+
+function func_times_func!(A::Matrix,      
+                          z::Matrix,       
+                          coef::Function)
+    cntrd = centroid(z)
+    func_times_func!(A, z, coef(cntrd))
     return
 end
 
@@ -190,7 +225,7 @@ for the triangle with vertices z[:,1], z[:,2], z[:,3]
 components of each column are used).
 """
 function shape_params(z::Matrix)
-    b, centroid, area = barycentric(z)
+    b, area = barycentric(z)
     side = zeros(2,3)
     for p = 1:2
         side[p,1] = z[p,3] - z[p,2]

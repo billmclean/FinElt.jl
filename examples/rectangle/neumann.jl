@@ -51,7 +51,7 @@ for k = 0:refinements
     uh = complete_soln(ufree, vp)
     u = get_nodal_vals(exact_u, mesh)
     finish = time()
-    maxerr[k+1] = maximum(abs(uh-u))
+    maxerr[k+1] = maximum(abs.(uh-u))
     N = length(ufree)
     if k == 0
         @printf("%10d  %12.4e\n", N, maxerr[k+1])

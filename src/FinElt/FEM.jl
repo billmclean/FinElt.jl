@@ -95,7 +95,7 @@ conditions.
 """
 function degrees_of_freedom(mesh::Mesh, essential_bc::Array{String})
     nonodes = size(mesh.coord, 2)
-    isfree = Array(Bool, nonodes)
+    isfree = Array{Bool}(nonodes)
     fill!(isfree, true)
     for name in essential_bc
         if !(name in values(mesh.physname))

@@ -26,6 +26,7 @@
 #
 #      lambda = a pi^2 ( 1 / Lx^2 + 1 / Ly^2 )
 #
+using PyPlot
 using FinElt
 using FinElt.PlanarPoisson
 include("ode23s.jl")
@@ -65,3 +66,8 @@ end
 finish = time()
 elapsed = finish - start
 
+figure(1)
+plot(t, err)
+xlabel(L"t")
+title("Error solving the heat equation")
+grid(true)

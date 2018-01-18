@@ -65,9 +65,9 @@ function ode23s(F, y0, tspan; reltol = 1.0e-5, abstol = 1.0e-8,
     h = tdir*abs(tfinal - t)/100  # initial step size
 
     y = y0
-    tout = Array(typeof(t), 1)
+    tout = Array{typeof(t)}(1)
     tout[1] = t         # first output time
-    yout = Array(typeof(y0), 1)
+    yout = Array{typeof(y0)}(1)
     yout[1] = copy(y)         # first output solution
 
     F0 = F(t,y)
@@ -106,7 +106,7 @@ function ode23s(F, y0, tspan; reltol = 1.0e-5, abstol = 1.0e-8,
             if points==:specified || points==:all
                 # only points in tspan are requested
                 # -> find relevant points in (t,t+h]
-                for toi in tspan[(tspan.>t) & (tspan.<=t+h)]
+                for toi in tspan[(tspan.>t) .& (tspan.<=t+h)]
                     # rescale to (0,1]
                     s = (toi-t)/h
 

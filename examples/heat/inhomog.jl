@@ -79,3 +79,8 @@ end
 finish = time()
 elapsed = finish - start
 
+figure(1)
+plot(t, err)
+xlabel(L"$t$")
+title("Error solving the inhomogeneous heat equation")
+grid(true)

@@ -56,7 +56,7 @@ for k = 0:refinements
     d, nconv, niter, nmult, resid = eigs(A, B, nev=nev, which=:SM, 
                                          ritzvec=false)
     finish = time()
-    err[:,k+1] = abs(d-λ[1:nev])
+    err[:,k+1] = abs.(d-λ[1:nev])
     N = size(A, 1)
     if k == 0
         elapsed = finish - start

@@ -1,6 +1,6 @@
 const FILE_FORMAT = ("2.2", "0", "8")
 
-immutable GeomType
+struct GeomType
     gmsh_code :: Int
     dimen     :: Int
     nonodes   :: Int
@@ -29,7 +29,7 @@ const GETGEOMTYPE = Dict(1 => LINE,
 # nodes_of[physname]  = nodes in physname
 #
 
-immutable Mesh
+struct Mesh
     coord      :: Array{Float64, 2}
     physdim    :: Dict{String, Int}
     physnum    :: Dict{String, Int}

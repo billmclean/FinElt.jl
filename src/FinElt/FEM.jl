@@ -7,7 +7,7 @@ fixednode[k]   is the gmsh node number of the kth fixed node.
 node2free[nd]  = k if nd = freenode[k], -1 otherwise.
 node2fixed[nd] = k if nd = fixednode[k], -1 otherwise.
 """
-immutable DoF
+struct DoF
     isfree     :: Vector{Bool}    
     freenode   :: Vector{Integer}
     fixednode  :: Vector{Integer}
@@ -15,7 +15,7 @@ immutable DoF
     node2fixed :: Vector{Integer}
 end
 
-immutable VariationalProblem
+struct VariationalProblem
     mesh         :: Mesh
     dof          :: DoF
     essential_bc :: Vector{String}
@@ -24,7 +24,7 @@ immutable VariationalProblem
     ufixed       :: Vector{Float64}
 end
 
-immutable EigenProblem
+struct EigenProblem
     mesh           :: Mesh
     dof            :: DoF
     essential_bc   :: Vector{String}
@@ -150,20 +150,13 @@ function assembled_linear_system(vp::VariationalProblem)
     dof = vp.dof
     nofree = length(dof.freenode)
     nofixed = length(dof.fixednode)
-    A = sparse(Int64[], Int64[], Float64[], nofree, nofree)
+    A = assembled_matrix(vp)
     b = zeros(nofree)
-    for (name, elm_mat!, coef) in vp.bilin_form
-        next = assembled_matrix(name, elm_mat!, coef, mesh, dof)
-        A += next[:,1:nofree]
-        if nofixed > 0
-            b -= next[:,nofree+1:end] * vp.ufixed
-        end
+    assembled_vector!(b, vp)
+    if nofixed > 0
+        b .= b - A[:,nofree+1:end] * vp.ufixed
     end
-    for (name, elm_vec!, f) in vp.lin_functnl
-        next = assembled_vector(name, elm_vec!, f, mesh, dof)
-        b += next
-    end
-    return A, b
+    return A[:,1:nofree], b
 end
 
 function assembled_eigenproblem_matrices(ep::EigenProblem)
@@ -185,13 +178,27 @@ function assembled_eigenproblem_matrices(ep::EigenProblem)
 end
 
 function element_matrix(elm_A::Matrix{Float64}, z::Matrix{Float64}, 
-                        coef::Union{Float64,Function}, k::Int64, elm_mat!::Function)
+                        coef::Union{Float64,Function}, k::Int64, 
+                        elm_mat!::Function)
     elm_mat!(elm_A, z, coef)
 end
 
 function element_matrix(elm_A::Matrix{Float64}, z::Matrix{Float64}, 
                         coef::Vector{Float64}, k::Int64, elm_mat!::Function)
     elm_mat!(elm_A, z, coef[k])
+end
+
+function assembled_matrix(vp::VariationalProblem)
+    mesh = vp.mesh
+    dof = vp.dof
+    nofree = length(dof.freenode)
+    nofixed = length(dof.fixednode)
+    A = sparse(Int64[], Int64[], Float64[], nofree, nofree+nofixed)
+    for (name, elm_mat!, coef) in vp.bilin_form
+        next = assembled_matrix(name, elm_mat!, coef, mesh, dof)
+        A += next
+    end
+    return A
 end
 
 function assembled_matrix(name::String, elm_mat!::Function, 
@@ -235,13 +242,34 @@ function assembled_matrix(name::String, elm_mat!::Function,
     return A
 end
 
+function assembled_vector!(loadvec::Vector{Float64}, vp::VariationalProblem)
+    mesh = vp.mesh
+    dof = vp.dof
+    nofree = length(dof.freenode)
+    nofixed = length(dof.fixednode)
+    @assert length(loadvec) == nofree
+    fill!(loadvec, 0.0)
+    for (name, elm_vec!, f) in vp.lin_functnl
+        assembled_vector!(loadvec, name, elm_vec!, f, mesh, dof)
+    end
+end
+
 function assembled_vector(name::String, elm_vec!::Function, 
                           f::Function, mesh::Mesh, dof::DoF)
     nofree = length(dof.freenode)
+    loadvec = zeros(nofree)
+    assembled_vector!(loadvec, name, elm_vec!, f, mesh, dof)
+    return loadvec
+end
+
+function assembled_vector!(loadvec::Vector{Float64}, 
+                           name::String, elm_vec!::Function, 
+                           f::Function, mesh::Mesh, dof::DoF)
+    nofree = length(dof.freenode)
+    @assert length(loadvec) == nofree
     nofixed = length(dof.fixednode)
     isfree = dof.isfree
     elm = mesh.elms_of[name]
-    loadvec = zeros(nofree)
     nonodes_per_elm = size(elm, 1)
     elm_v = zeros(nonodes_per_elm)
     z = zeros(size(mesh.coord,1), nonodes_per_elm)
@@ -259,7 +287,6 @@ function assembled_vector(name::String, elm_vec!::Function,
             end
         end
     end
-    return loadvec
 end
 
 """
@@ -280,6 +307,22 @@ function complete_soln(ufree::Vector{Float64}, vp::VariationalProblem)
         u[nd] = vp.ufixed[k]
     end
     return u
+end
+
+function complete_soln!(u::Vector{Float64}, ufree::Vector{Float64},
+                        ufixed::Vector{Float64}, dof::DoF)
+    nofree = length(dof.freenode)
+    nofixed = length(dof.fixednode)
+    @assert length(ufree) == nofree
+    @assert length(ufixed) == nofixed
+    for k = 1:nofree
+        nd = dof.freenode[k]
+        u[nd] = ufree[k]
+    end    
+    for k = 1:nofixed
+        nd = dof.fixednode[k]
+        u[nd] = ufixed[k]
+    end
 end
 
 function complete_soln(vfree::Matrix{Float64}, ep::EigenProblem)

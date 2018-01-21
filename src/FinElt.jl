@@ -10,7 +10,8 @@ export get_node_coords, get_nodal_vals, successive_refine
 export VariationalProblem, assign_bdry_vals!, EigenProblem
 export DoF, degrees_of_freedom
 export assembled_linear_system, assembled_eigenproblem_matrices
-export assembled_matrix, assembled_vector, complete_soln
+export assembled_matrix, assembled_vector!, assembled_vector 
+export complete_soln, complete_soln!
 
 include("FinElt/Gmsh.jl")
 include("FinElt/FEM.jl")

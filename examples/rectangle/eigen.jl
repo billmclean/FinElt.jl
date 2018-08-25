@@ -25,6 +25,8 @@
 
 using FinElt
 using FinElt.PlanarPoisson
+using Printf
+using Arpack
 
 include("params.jl")
 const nev = 4

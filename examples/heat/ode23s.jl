@@ -1,4 +1,4 @@
-
+using LinearAlgebra: lu
 # FIXME: This doesn't really work if x is anything but a Vector or a scalar
 function fdjacobian(F, x::Number, t)
     ftx = F(t, x)
@@ -51,8 +51,8 @@ function ode23s(F, y0, tspan; reltol = 1.0e-5, abstol = 1.0e-8,
     end
 
     # constants
-    const d = 1/(2 + sqrt(2))
-    const e32 = 6 + sqrt(2)
+    d = 1/(2 + sqrt(2))
+    e32 = 6 + sqrt(2)
 
 
     # initialization
@@ -65,9 +65,9 @@ function ode23s(F, y0, tspan; reltol = 1.0e-5, abstol = 1.0e-8,
     h = tdir*abs(tfinal - t)/100  # initial step size
 
     y = y0
-    tout = Array{typeof(t)}(1)
+    tout = Array{typeof(t)}(undef, 1)
     tout[1] = t         # first output time
-    yout = Array{typeof(y0)}(1)
+    yout = Array{typeof(y0)}(undef, 1)
     yout[1] = copy(y)         # first output solution
 
     F0 = F(t,y)
@@ -83,7 +83,7 @@ function ode23s(F, y0, tspan; reltol = 1.0e-5, abstol = 1.0e-8,
             W = M - h*d*J
         else
             # (see Sec. 5 in [SR97])
-            W = lufact( M - h*d*J )
+            W = lu( M - h*d*J )
         end
 
         # approximate time-derivative of F

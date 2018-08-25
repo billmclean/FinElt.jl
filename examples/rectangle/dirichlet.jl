@@ -21,6 +21,7 @@
 
 using FinElt
 using FinElt.PlanarPoisson
+using Printf
 
 include("params.jl")
 

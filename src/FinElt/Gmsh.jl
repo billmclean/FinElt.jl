@@ -169,7 +169,7 @@ and sorted in increasing order.
 """
 function noduplicates(a::Vector{Int})
     sort!(a)
-    b = Array{Int}(length(a))
+    b = Array{Int}(undef, length(a))
     j = 1
     b[j] = a[1]
     for k = 2:length(a)

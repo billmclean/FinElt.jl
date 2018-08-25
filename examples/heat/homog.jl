@@ -29,6 +29,7 @@
 using PyPlot
 using FinElt
 using FinElt.PlanarPoisson
+using LinearAlgebra: norm
 include("ode23s.jl")
 
 const a = 0.1

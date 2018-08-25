@@ -1,5 +1,8 @@
 module FinElt
 
+using Printf: @sprintf
+using SparseArrays: sparse
+
 export Mesh, read_msh_file, write_pos_file
 export GeomType, LINE, TRIANGLE, TETRAHEDRON, get_mesh_h, count_elms
 export save_nodal_scalar_field, save_nodal_vector_field

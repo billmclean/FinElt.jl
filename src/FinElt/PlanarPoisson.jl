@@ -1,6 +1,8 @@
 module PlanarPoisson
 
-importall FinElt
+import FinElt: VariationalProblem, EigenProblem, Mesh
+import FinElt: TRIANGLE, LINE
+using LinearAlgebra: rmul!
 
 export add_bilin_form!, add_lin_functnl!
 export barycentric, barycentric!, centroids_of
@@ -136,7 +138,7 @@ function grad_dot_grad!(A::Matrix,         # output 3x3
                         coef::Float64      )    
     # A = element stiffness matrix
     grad_dot_grad!(A, z)
-    scale!(A, coef)
+    rmul!(A, coef)
     return
 end                    
 
@@ -164,7 +166,7 @@ function func_times_func!(A::Matrix,
                           z::Matrix,     
                           coef::Float64)
     func_times_func!(A, z)
-    scale!(A, coef)
+    rmul!(A, coef)
     return
 end
 

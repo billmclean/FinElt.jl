@@ -2,6 +2,7 @@
 
 using FinElt
 using FinElt.PlanarPoisson
+using Arpack: eigs
 
 const h = 0.05
 run(`gmsh -2 -clmax $h -o roundL.msh roundL.geo`)

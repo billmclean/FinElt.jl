@@ -1,6 +1,0 @@
-authors = ["William McLean <w.mclean@unsw.edu.au>"]
-name = "FinElt"
-uuid = "de270be8-7cf9-11e8-1732-6198457ef919"
-version = "0.1.0"
-
-[deps]

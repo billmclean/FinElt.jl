@@ -13,8 +13,11 @@ to use the `-format msh22` command-line option for `gmsh`.
 Changelog:
 
 13-01-2020: v0.5.2 Fixes to ensure use of Gmsh 2.2 msh file format.
+
 20-02-2017: v0.0.3 Add support for variable coefficient.
+
 16-07-2016: v0.0.2 Change ASCIIString to String for Julia 0.5.
+
 26-09-2015: v0.0.1
 
 [1]: http://geuz.org/gmsh/

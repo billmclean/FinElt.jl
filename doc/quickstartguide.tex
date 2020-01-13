@@ -14,13 +14,13 @@ To use FinElt you need to install \href{www.julialan.org}{Julia}~and
 \href{www.geuz.org/gmsh/}{Gmsh}~\cite{Gmsh}.  Versions for Windows or 
 OS~X can be downloaded from the project websites.  Under Linux, you
 might be able to use your distribution's package manager.  For 
-example, I develop FinElt on \href{www.fedoraproject.org}{Fedora~21}, 
+example, I develop FinElt on \href{www.fedoraproject.org}{Fedora~31}, 
 and can simply do
 \begin{verbatim}
 # dnf install julia gmsh 
 \end{verbatim}
-At the time of writing, this command installs Julia~0.3.3 and
-Gmsh~2.8.5.
+At the time of writing (January 2020), this command installs Julia~1.2.0 and
+Gmsh~4.4.1.
 
 Whatever platform you are using, once Julia is installed you can 
 easily set up FinElt:
@@ -31,11 +31,7 @@ This guide will walk you through two examples.  The first is a
 ``hello world'' problem, that explains the basic usage of FinElt.
 The second is more elaborate and shows more of the capabilities of 
 the package.  The source code for both problems is in the 
-\texttt{examples/keyhole} directory of the package; on Linux systems, 
-the path is
-\begin{verbatim}
-~/.julia/v0.3/FinElt/examples/keyhole
-\end{verbatim}
+\texttt{examples/keyhole} directory of the package on github.
 You should copy this directory to a convenient location.
 
 After working through these two examples, I recommend that you 
@@ -137,8 +133,12 @@ To generate a triangulation, click on the \verb!+! next to
 the \verb!Mesh! label in the left pane of the main Gmsh window and 
 then click on \verb!2D!.  The result should look something like 
 Figure~\ref{fig: triangulation}.  From the \verb!File! menu, select 
-the \verb!Save Mesh! option to create a text file 
-\verb!keyhole.msh!.
+the \verb!Export ...! option to create a text file 
+\verb!keyhole.msh!.  
+
+\paragraph{Important:} FinElt does not support more recent Gmsh file 
+formats, so when the \verb!MSH Options!  window opens you must select 
+\verb!Version 2 ASCII! from the drop-down menu.
 
 \paragraph{Finite element solution.}
 Let $\Omega_h$ denote the triangulated domain, where, in the customary
@@ -163,7 +163,7 @@ and creating a data structure called \verb!mesh! that stores (amongst
 other things) the coordinates of the vertices of the triangulation as 
 well as the connectivity matrix that specifies which points make up 
 each triangle.  Look in the file
-\verb!FinElt/Gmsh.jl! to see how this data structure is defined via 
+\verb!src/FinElt/Gmsh.jl! to see how this data structure is defined via 
 the \verb!Mesh! type.  
 
 The script then creates a second data structure~\verb!vp! that 
@@ -311,8 +311,7 @@ Define the trial set~$\mathcal{S}$ and test space~$\mathcal{T}$ by
 \text{$v=-|x|/2$ for $x\in\text{DarkBlue}$, $v=0$ for 
 $x\in\text{Black}$}\,\},\\
 \mathcal{T}&=\{\,u\in H^1(\Omega):
-\text{$v=0$ for $x\in\text{DarkBlue}$
-$x\in\text{Black}$}\,\}.
+\text{$v=0$ for $x\in\text{DarkBlue}\cup\text{Black}$}\,\}.
 \end{align*}
 Based on the first Green identity~\eqref{eq: first Green}, the weak 
 solution~$u\in\mathcal{S}$ satisfies
@@ -320,7 +319,7 @@ solution~$u\in\mathcal{S}$ satisfies
 \int_{\text{LightBlue}}\nabla u\cdot\nabla v
 	+10\int_{\text{LightGreen}}\nabla u\cdot\nabla v\\
 	=\int_{\text{LightBlue}}v+\int_{\text{LightGreen}}4v
-	-\int_{\text{Red}}v
+	-\int_{\text{Violet}}v
 \quad\text{for all $v\in\mathcal{T}$.}
 \end{multline*}
 
@@ -346,7 +345,7 @@ solution~$u_h\in\mathcal{S}_h$ is then defined by
 \int_{\text{LightBlue}_h}\nabla u_h\cdot\nabla v
 	+10\int_{\text{LightGreen}_h}\nabla u_h\cdot\nabla v\\
 	=\int_{\text{LightBlue}_h}v+\int_{\text{LightGreen}_h}4v
-	-\int_{\text{Red}_h}v
+	-\int_{\text{Violet}_h}v
 \quad\text{for all $v\in\mathcal{T}_h$.}
 \end{multline*}
 
@@ -354,8 +353,9 @@ solution~$u_h\in\mathcal{S}_h$ is then defined by
 Use a text editor to look at the geometry description 
 in \verb!complic_keyhole.geo!, and then look at the source code in
 \verb!complic_keyhole.jl!.  Notice that the Julia script runs Gmsh 
-twice, using the latter's command-line interface.  The first call 
-performs the mesh generation, creating the file 
+twice, using the latter's command-line interface.  (The 
+\verb!-format msh22! option is needed to generate the older file format.)
+The first call performs the mesh generation, creating the file 
 \verb!complic_keyhole.msh!, and the second runs the Gmsh 
 script \verb!complic_keyhole.script! to display a surface plot of the 
 solution.  Thus, the whole process requires only the single command

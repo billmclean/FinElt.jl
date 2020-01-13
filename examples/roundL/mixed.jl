@@ -4,7 +4,7 @@ using FinElt
 using FinElt.PlanarPoisson
 
 h = 0.05
-run(`gmsh -2 -clmax $h -o roundL.msh roundL.geo`)
+run(`gmsh -2 -clmax $h -o roundL.msh -format msh22 roundL.geo`)
 
 mesh = read_msh_file("roundL.msh")
 essential_bc = [ "Dirichlet" ]

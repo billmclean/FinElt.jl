@@ -1,7 +1,8 @@
 using FinElt
 using FinElt.PlanarPoisson
 
-run(`gmsh -2 -o complic_keyhole.msh -clmax 0.05 complic_keyhole.geo`)
+run(`gmsh -2 -o complic_keyhole.msh -clmax 0.05 -format msh22
+complic_keyhole.geo`)
 mesh = read_msh_file("complic_keyhole.msh")
 essential_bc = [ "DarkBlue", "Black" ]
 vp = VariationalProblem(mesh, essential_bc)

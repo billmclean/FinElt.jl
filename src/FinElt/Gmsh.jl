@@ -413,11 +413,11 @@ function successive_refine(shape::String, dimen::Integer,
                            refinements::Integer, h0::Float64)
     infile = "$shape.geo"
     outfile = "$(shape)0.msh"
-    run(`gmsh -optimize -$dimen -clmax $h0 -o $outfile $infile`)
+    run(`gmsh -$dimen -clmax $h0 -o $outfile -format msh22 $infile`)
     for k = 1:refinements
         infile = "$shape$(k-1).msh"
         outfile = "$shape$k.msh"
-        run(`gmsh -v 0 -refine -o $outfile $infile`)
+        run(`gmsh -v 0 -refine -o $outfile -format msh22 $infile`)
     end
     return
 end

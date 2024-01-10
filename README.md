@@ -1,6 +1,9 @@
 FinElt.jl
 =========
 
+**This package is no longer maintained.  You might be interested in
+[this newer replacement](https://github.com/billmclean/SimpleFiniteElements.jl).**
+
 A simple package for a first course in finite element methods.
 
 These Julia routines rely on [Gmsh][1] for mesh generation and
